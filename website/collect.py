@@ -10,6 +10,9 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 import requests
 
+# add metagoofil
+# add auto download katana
+
 OUTPUT_DIR = "data/output"
 ALL_URLS_FILE = os.path.join(OUTPUT_DIR, "all_urls.txt")
 SCRAPED_DIR = os.path.join(OUTPUT_DIR, "scraped")

@@ -1,6 +1,7 @@
 import argparse
 import os
 import shutil
+from cli.logo import logo
 from website.collect import collect
 from website.processing import get_emails, get_subdomains
 
@@ -14,7 +15,8 @@ def clean_data():
         print("No data to clean.")
 
 def main():
-    parser = argparse.ArgumentParser(description="Data collector and processor")
+    print(logo())
+    parser = argparse.ArgumentParser(description="SOCMINT C4ISR - surveillance and reconnaissance.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     website_parser = subparsers.add_parser("website", help="Website related commands")

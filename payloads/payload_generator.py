@@ -5,3 +5,7 @@
 # generate download div
 
 # generate google funny link
+
+# rickroll generator
+
+# deadly rickroll generator

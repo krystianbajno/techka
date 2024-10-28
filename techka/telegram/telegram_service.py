@@ -1,133 +1,131 @@
+import os
+import sqlite3
+import shutil
+import networkx as nx
 from techka.telegram.telegram_client import TelegramClientManager
 from techka.telegram.telegram_database import DatabaseManager
-from techka.auth.auth_service import AuthService
-import sqlite3
-import os
-import re
-from collections import defaultdict, Counter
-from datetime import datetime
-from telethon.tl.functions.channels import GetParticipantsRequest
-from telethon.tl.types import ChannelParticipantsSearch, PeerChannel, MessageMediaDocument
-from telethon.tl.functions.messages import GetHistoryRequest
+from techka.telegram.data_collection import DataCollector
+from techka.telegram.data_display import DataDisplay
+from techka.telegram.data_processing import DataProcessor
+from techka.telegram.intelligence_analysis import IntelligenceAnalysis
+from techka.telegram.search_and_storage import DataIndexer
 
 class TelegramService:
-    def __init__(self, auth_service, identity_name):
-        self.auth_service = auth_service
-        self.identity_name = identity_name
+    ATTACHMENTS_DIR = "data/attachments"
 
-        # Initialize Telegram Client and Database Manager
-        self.client_manager = TelegramClientManager(auth_service, identity_name)
+    def __init__(self, auth_service):
+        self.auth_service = auth_service
+        self.client_manager = TelegramClientManager(auth_service)
         self.client = self.client_manager.get_client()
         self.db_manager = DatabaseManager()
 
-    ### COLLECTION PHASE ###
+        # Initialize modules
+        self.data_collector = DataCollector(self.client, self.db_manager)
+        self.data_display = DataDisplay(self.db_manager)
+        self.data_processor = DataProcessor(self.db_manager)
+        self.intelligence_analysis = IntelligenceAnalysis(self.client, self.db_manager)
+        self.data_indexer = DataIndexer(self.db_manager)
 
-    def collect_channels(self):
-        """ Collect all channels from the logged-in account and save them in the database """
-        if not self.client.is_user_authorized():
-            self.client_manager._initialize_client()
+    ### Collection and Data Retrieval ###
 
-        conn = sqlite3.connect(self.db_manager.db_name)
-        cursor = conn.cursor()
+    def collect_all_channels(self):
+        """Collect all channels the user has access to."""
+        self.data_collector.collect_all_channels()
 
-        dialogs = self.client.get_dialogs()
-        for dialog in dialogs:
-            if dialog.is_channel:
-                channel = dialog.entity
-                cursor.execute('''
-                    INSERT OR IGNORE INTO channels (channel_id, title, username, date_created)
-                    VALUES (?, ?, ?, ?)
-                ''', (channel.id, channel.title, channel.username, channel.date))
-        conn.commit()
-        conn.close()
+    def collect_all_participants_in_channel(self, channel_name):
+        """Collect all users from a specific channel."""
+        self.data_collector.collect_active_users_in_channel(channel_name)
 
-    def collect_users_in_channel(self, channel_name):
-        """ Collect all users in a specific channel and save them in the database """
-        if not self.client.is_user_authorized():
-            self.client_manager._initialize_client()
+    def collect_messages_in_channel(self, channel_name):
+        """Collect all messages from a specific channel."""
+        self.data_collector.collect_messages_in_channel(channel_name)
 
-        channel = self.client.get_entity(channel_name)
-        all_participants = []
-        offset = 0
-        limit = 100
+    def collect_messages_from_user(self, user_id):
+        """Collect all messages from a specific user across all channels."""
+        self.data_collector.collect_messages_from_user(user_id)
 
-        while True:
-            participants = self.client(GetParticipantsRequest(
-                channel,
-                ChannelParticipantsSearch(''),
-                offset=offset,
-                limit=limit,
-                hash=0
-            ))
-            if not participants.users:
-                break
+    def collect_messages_from_multiple_channels(self, channel_names=None):
+        """
+        Collect all messages from specified channels. 
+        If channel_names is None, collects from all available channels.
+        """
+        self.data_collector.collect_messages_from_multiple_channels(channel_names)
 
-            all_participants.extend(participants.users)
-            offset += len(participants.users)
+    def collect_all_users(self):
+        """Collect all users across all channels."""
+        self.data_collector.collect_all_users()
+        print("Collected all users across all channels.")
+        
+    ### Real-time Monitoring ###
+    
+    def start_realtime_monitoring_for_user(self, user_name):
+        """Start real-time monitoring of messages for user."""
+        self.intelligence_analysis.start_realtime_monitoring_for_user(user_name)
 
-        for user in all_participants:
-            profile = {
-                'user_id': user.id,
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'bio': ''  # Use GetFullUser if you need a detailed profile
-            }
-            self.db_manager.save_user_profile(profile, channel.id)
+    def start_realtime_monitoring_for_channel(self, channel_name):
+        """Start real-time monitoring of messages in a specific channel."""
+        self.intelligence_analysis.start_realtime_monitoring(channel_name)
 
-    def collect_messages_from_channel(self, channel_name):
-        """ Collect all messages from a specific channel and save them in the database """
-        if not self.client.is_user_authorized():
-            self.client_manager._initialize_client()
+    def start_realtime_monitoring_for_all_channels(self):
+        """Start real-time monitoring of all available channels."""
+        self.intelligence_analysis.start_realtime_monitoring_for_all_channels()
 
-        channel = self.client.get_entity(channel_name)
+    ### Display Collected Data ###
 
-        conn = sqlite3.connect(self.db_manager.db_name)
-        cursor = conn.cursor()
+    def display_all_channels(self):
+        """Display all collected channels."""
+        return self.data_display.display_channels()
 
-        offset_id = 0
-        limit = 100
+    def display_messages_from_user(self, user_id):
+        """Display all messages collected from a specific user."""
+        return self.data_display.display_messages_from_user(user_id)
 
-        while True:
-            history = self.client(GetHistoryRequest(
-                peer=PeerChannel(channel.id),
-                limit=limit,
-                offset_id=offset_id,
-                max_id=0,
-                min_id=0,
-                add_offset=0,
-                hash=0
-            ))
+    def display_messages_in_channel(self, channel_name):
+        """Display all messages in a specified channel."""
+        return self.data_display.display_messages_in_channel(channel_name)
 
-            if not history.messages:
-                break
+    def display_latest_messages_in_channel(self, channel_name, limit=10):
+        """Display the latest messages in a specific channel."""
+        return self.data_display.display_latest_messages_in_channel(channel_name, limit)
 
-            for message in history.messages:
-                user_id = message.from_id.user_id if message.from_id else None
-                cursor.execute('''
-                    INSERT OR IGNORE INTO messages (message_id, channel_id, user_id, date, content)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (message.id, channel.id, user_id, message.date.strftime("%Y-%m-%d %H:%M:%S"), message.message))
-                
-                # Collect attachments if they exist
-                if message.media and isinstance(message.media, MessageMediaDocument):
-                    self.collect_attachment(message)
+    ### Data Analysis ###
 
-            offset_id = history.messages[-1].id
-            conn.commit()
-        conn.close()
+    def analyze_user_activity_in_channel(self, channel_name):
+        """Analyze user activity levels in a specified channel."""
+        return self.data_processor.analyze_user_activity(channel_name)
 
-    def collect_attachment(self, message):
-        """ Collect any attachments from a message """
-        if not os.path.exists('attachments'):
-            os.makedirs('attachments')
+    def keyword_analysis_in_channel(self, keywords, channel_name):
+        """Analyze messages in a specific channel for specified keywords."""
+        return self.data_processor.keyword_analysis_in_channel(keywords, channel_name)
 
-        file_path = self.client.download_media(message, file='attachments/')
+    ### Intelligence and Surveillance ###
+
+    def build_social_network_graph(self, export_path=None):
+        """Build a social network graph for all users and interactions and optionally export it."""
+        G = self.intelligence_analysis.build_social_graph()
+
+        if export_path:
+            # Save the graph in GraphML format for visualization in tools like Gephi
+            nx.write_graphml(G, export_path)
+            print(f"Social network graph exported to {export_path}")
+
+        return G
+
+    ### Advanced Search ###
+
+    def search_collected_data(self, query):
+        """Search for a keyword across all collected entities (channels, users, messages)."""
+        return self.data_indexer.search(query)
+
+    ### Updated Attachment Saving with Directory Structure ###
+
+    def save_attachment(self, message, file_type, user_id, channel_id):
+        """Download and save the attachment to a structured directory based on channel and user."""
+        file_path = self.client.download_media(message, file=self._get_attachment_path(channel_id, user_id, file_type))
         if file_path:
             file_name = os.path.basename(file_path)
-            file_type = os.path.splitext(file_name)[1].replace('.', '')
-            
-            # Save attachment in the database
+
+            # Store file path in the database
             conn = sqlite3.connect(self.db_manager.db_name)
             cursor = conn.cursor()
             cursor.execute('''
@@ -136,101 +134,169 @@ class TelegramService:
             ''', (message.id, file_name, file_type, file_path))
             conn.commit()
             conn.close()
-            print(f'Downloaded attachment to {file_path}')
+            print(f"Saved {file_type} to {file_path}")
 
-    def collect_all_users_from_all_channels(self):
-        """ Collect and save all users from all stored channels in the database """
+    def _get_attachment_path(self, channel_id, user_id, file_type):
+        """Create and return the directory path for storing attachments based on channel, user, and type."""
+        channel_dir = os.path.join(self.ATTACHMENTS_DIR, f"channel_{channel_id}")
+        user_dir = os.path.join(channel_dir, f"user_{user_id}")
+        type_dir = os.path.join(user_dir, file_type + "s")
+
+        os.makedirs(type_dir, exist_ok=True)  # Ensure the directories exist
+        return type_dir
+
+    ### Attachment Retrieval and Display Methods ###
+
+    def get_all_attachments(self):
+        """Retrieve all attachment paths."""
         conn = sqlite3.connect(self.db_manager.db_name)
         cursor = conn.cursor()
-
-        cursor.execute('SELECT channel_id, title FROM channels')
-        channels = cursor.fetchall()
-
-        for channel_id, channel_name in channels:
-            print(f"Collecting users in channel: {channel_name}")
-            self.collect_users_in_channel(channel_name)
-
-        conn.close()
-
-    ### PROCESSING PHASE ###
-
-    def check_and_collect_data(self, table_name, collect_method, *args):
-        """ Check if the database table has data; if not, trigger data collection """
-        conn = sqlite3.connect(self.db_manager.db_name)
-        cursor = conn.cursor()
-        cursor.execute(f'SELECT COUNT(*) FROM {table_name}')
-        count = cursor.fetchone()[0]
-        conn.close()
-
-        if count == 0:
-            print(f'No data found in {table_name}. Collecting data...')
-            collect_method(*args)
-
-    def process_user_interactions(self, channel_name):
-        """ Process user interactions for posts in a specific channel """
-        self.check_and_collect_data('channels', self.collect_channels)
-        self.check_and_collect_data('messages', self.collect_messages_from_channel, channel_name)
-        
-        conn = sqlite3.connect(self.db_manager.db_name)
-        cursor = conn.cursor()
-
-        cursor.execute('''
-            SELECT users.username, COUNT(messages.id) as post_count
-            FROM messages
-            JOIN users ON messages.user_id = users.user_id
-            WHERE messages.channel_id = (SELECT channel_id FROM channels WHERE title = ?)
-            GROUP BY users.username
-            ORDER BY post_count DESC
-        ''', (channel_name,))
-
-        results = cursor.fetchall()
-        conn.close()
-
-        return results
-
-    def analyze_keywords_in_messages(self, keywords, channel_name):
-        """ Analyze messages in a channel for specific keywords """
-        self.check_and_collect_data('channels', self.collect_channels)
-        self.check_and_collect_data('messages', self.collect_messages_from_channel, channel_name)
-        
-        conn = sqlite3.connect(self.db_manager.db_name)
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT content FROM messages
-            WHERE channel_id = (SELECT channel_id FROM channels WHERE title = ?)
-        ''', (channel_name,))
-
-        messages = cursor.fetchall()
-        keyword_count = defaultdict(int)
-
-        for message in messages:
-            for keyword in keywords:
-                if re.search(r'\b' + re.escape(keyword) + r'\b', message[0], re.IGNORECASE):
-                    keyword_count[keyword] += 1
-
-        conn.close()
-        return dict(keyword_count)
-
-    def extract_data_for_analysis(self):
-        """ Extract messages and attachments for external analysis """
-        conn = sqlite3.connect(self.db_manager.db_name)
-        cursor = conn.cursor()
-
-        cursor.execute('SELECT * FROM messages')
-        messages = cursor.fetchall()
-
-        cursor.execute('SELECT * FROM attachments')
+        cursor.execute("SELECT file_path, file_name, file_type FROM attachments")
         attachments = cursor.fetchall()
-
         conn.close()
-        return {'messages': messages, 'attachments': attachments}
-    
+        return attachments
 
-def get_first_telegram_identity(auth_service):
-    """ Helper function to get the first Telegram identity from the AuthService """
-    identities = auth_service.get_all_identities_for_service('Telegram')
-    if identities:
-        return identities[0]
-    else:
-        print("No Telegram identities found in AuthService.")
-        exit(1)
+    def get_attachments_by_type(self, attachment_type):
+        """Retrieve attachment paths of a specific type."""
+        conn = sqlite3.connect(self.db_manager.db_name)
+        cursor = conn.cursor()
+        cursor.execute("SELECT file_path, file_name, file_type FROM attachments WHERE file_type = ?", (attachment_type,))
+        attachments = cursor.fetchall()
+        conn.close()
+        return attachments
+
+    def get_attachments_by_channel(self, channel_id):
+        """Retrieve all attachments from a specific channel."""
+        conn = sqlite3.connect(self.db_manager.db_name)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT attachments.file_path, attachments.file_name, attachments.file_type
+            FROM attachments
+            JOIN messages ON attachments.message_id = messages.message_id
+            WHERE messages.channel_id = ?
+        ''', (channel_id,))
+        attachments = cursor.fetchall()
+        conn.close()
+        return attachments
+
+    def get_attachments_by_user(self, user_id):
+        """Retrieve all attachments sent by a specific user across all channels."""
+        conn = sqlite3.connect(self.db_manager.db_name)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT attachments.file_path, attachments.file_name, attachments.file_type
+            FROM attachments
+            JOIN messages ON attachments.message_id = messages.message_id
+            WHERE messages.user_id = ?
+        ''', (user_id,))
+        attachments = cursor.fetchall()
+        conn.close()
+        return attachments
+
+    def get_attachments_by_type_and_channel(self, attachment_type, channel_id):
+        """Retrieve all attachments of a specific type from a specific channel."""
+        conn = sqlite3.connect(self.db_manager.db_name)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT attachments.file_path, attachments.file_name, attachments.file_type
+            FROM attachments
+            JOIN messages ON attachments.message_id = messages.message_id
+            WHERE attachments.file_type = ? AND messages.channel_id = ?
+        ''', (attachment_type, channel_id))
+        attachments = cursor.fetchall()
+        conn.close()
+        return attachments
+
+    def get_attachments_by_type_and_user(self, attachment_type, user_id):
+        """Retrieve all attachments of a specific type sent by a specific user."""
+        conn = sqlite3.connect(self.db_manager.db_name)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT attachments.file_path, attachments.file_name, attachments.file_type
+            FROM attachments
+            JOIN messages ON attachments.message_id = messages.message_id
+            WHERE attachments.file_type = ? AND messages.user_id = ?
+        ''', (attachment_type, user_id))
+        attachments = cursor.fetchall()
+        conn.close()
+        return attachments
+
+    def export_attachments(self, export_dir, attachment_type=None, channel_id=None, user_id=None):
+        """
+        Export attachments based on type, channel, user, or a combination of these filters to a specified directory.
+        
+        Parameters:
+            export_dir (str): The path to the export directory.
+            attachment_type (str): The type of attachments to export (e.g., "image").
+            channel_id (int): The ID of the channel from which to export attachments.
+            user_id (int): The ID of the user whose attachments should be exported.
+        """
+        # Fetch attachments based on filters
+        if attachment_type and channel_id:
+            attachments = self.get_attachments_by_type_and_channel(attachment_type, channel_id)
+        elif attachment_type and user_id:
+            attachments = self.get_attachments_by_type_and_user(attachment_type, user_id)
+        elif attachment_type:
+            attachments = self.get_attachments_by_type(attachment_type)
+        elif channel_id:
+            attachments = self.get_attachments_by_channel(channel_id)
+        elif user_id:
+            attachments = self.get_attachments_by_user(user_id)
+        else:
+            attachments = self.get_all_attachments()
+
+        if not attachments:
+            print("No attachments found for the specified criteria.")
+            return
+
+        os.makedirs(export_dir, exist_ok=True)
+
+        for file_path, file_name, file_type in attachments:
+            sub_dir = export_dir
+            if channel_id:
+                sub_dir = os.path.join(sub_dir, f"channel_{channel_id}")
+            if user_id:
+                sub_dir = os.path.join(sub_dir, f"user_{user_id}")
+            if attachment_type:
+                sub_dir = os.path.join(sub_dir, f"{attachment_type}s")
+
+            os.makedirs(sub_dir, exist_ok=True)
+
+            dest_path = os.path.join(sub_dir, file_name)
+            shutil.copy2(file_path, dest_path)
+            print(f"Exported {file_name} to {dest_path}")
+
+        print(f"Export completed. Files saved to {export_dir}.")
+
+
+    def export_all_users(self, export_path):
+        """Export all users across all channels to a specified file."""
+        users = self.display_all_users()
+        
+        os.makedirs(os.path.dirname(export_path), exist_ok=True)
+        with open(export_path, 'w') as file:
+            file.write("User ID, Username, First Name, Last Name\n")
+            for user_id, username, first_name, last_name in users:
+                file.write(f"{user_id}, {username}, {first_name}, {last_name}\n")
+        print(f"Exported all users to {export_path}.")
+        
+    def display_all_users(self):
+        """Display all users across all channels."""
+        return self.data_display.display_all_users()
+    
+    def display_messages_from_user_in_channel(self, user_id, channel_name):
+        """Display all messages from a specific user in a specific channel."""
+        return self.data_display.display_messages_from_user_in_channel(user_id, channel_name)
+    
+    
+    def display_channels_for_user(self, user_id):
+        """Retrieve and display all channels that a specific user has participated in."""
+        return self.data_display.display_channels_for_user(user_id)
+    
+    
+    def display_users_in_channel(self, channel_name):
+        """Display users in a specific channel."""
+        users = self.data_display.display_users_in_channel(channel_name)
+        for user_id, username, first_name, last_name in users:
+            print(f"User ID: {user_id}, Username: {username}, First Name: {first_name}, Last Name: {last_name}")
+        return users

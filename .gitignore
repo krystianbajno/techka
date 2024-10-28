@@ -3,3 +3,4 @@ data/*
 venv/
 techka/rust_bindings/target/
 *.db
+*.session

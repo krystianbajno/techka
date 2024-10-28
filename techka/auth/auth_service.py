@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import time
 
 class AuthService:
     def __init__(self, db_name='auth_service.db'):
@@ -7,9 +8,9 @@ class AuthService:
         self._initialize_database()
 
     def _initialize_database(self):
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
+        self._execute_with_retry(self._create_identity_table)
 
+    def _create_identity_table(self, cursor):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS identity (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,87 +26,73 @@ class AuthService:
             )
         ''')
 
-        conn.commit()
-        conn.close()
-
     def add_identity(self, service_name, identity_name, phone_number=None, email=None, username=None, password=None, session_file=None, cookies=None):
-        """
-        Add a new identity for a specific service.
-        :param service_name: The name of the service (e.g., 'Telegram')
-        :param identity_name: A unique name for the identity (e.g., 'MarketingBot1')
-        :param phone_number: The phone number associated with the identity (optional)
-        :param email: The email associated with the identity (optional)
-        :param username: The username for the identity (optional)
-        :param password: The password for the identity (optional)
-        :param session_file: Path to the session file (optional)
-        :param cookies: Cookies associated with the identity (optional)
-        """
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-
-        try:
+        """Add a new identity for a specific service."""
+        def execute_add(cursor):
             cursor.execute('''
                 INSERT INTO identity (service_name, identity_name, phone_number, email, username, password, session_file, cookies)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (service_name, identity_name, phone_number, email, username, password, session_file, json.dumps(cookies)))
-            conn.commit()
             print(f'Identity "{identity_name}" for service "{service_name}" added successfully.')
-        except sqlite3.IntegrityError:
-            print(f'Identity "{identity_name}" for service "{service_name}" already exists.')
-        finally:
-            conn.close()
+
+        self._execute_with_retry(execute_add)
 
     def update_identity(self, service_name, identity_name, **kwargs):
-        """
-        Update an existing identity's details.
-        :param service_name: The name of the service
-        :param identity_name: The unique name of the identity
-        :param kwargs: Key-value pairs of attributes to update (e.g., email="new_email@example.com")
-        """
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
+        """Update an existing identity's details."""
+        def execute_update(cursor):
+            update_fields = []
+            update_values = []
+            for key, value in kwargs.items():
+                update_fields.append(f"{key} = ?")
+                update_values.append(value)
+            
+            update_query = f"UPDATE identity SET {', '.join(update_fields)} WHERE service_name = ? AND identity_name = ?"
+            update_values.extend([service_name, identity_name])
 
-        update_fields = []
-        update_values = []
-        for key, value in kwargs.items():
-            update_fields.append(f"{key} = ?")
-            update_values.append(value)
+            cursor.execute(update_query, update_values)
+            print(f'Identity "{identity_name}" for service "{service_name}" updated successfully.')
 
-        update_query = f"UPDATE identity SET {', '.join(update_fields)} WHERE service_name = ? AND identity_name = ?"
-        update_values.extend([service_name, identity_name])
+        self._execute_with_retry(execute_update)
 
-        cursor.execute(update_query, update_values)
-        conn.commit()
-        conn.close()
-        print(f'Identity "{identity_name}" for service "{service_name}" updated successfully.')
+    def get_any_identity_for(self, service_name):
+        """Retrieve an identity's details."""
+        def execute_select(cursor):
+            cursor.execute('SELECT * FROM identity WHERE service_name = ?', (service_name,))
+            identity = cursor.fetchone()
+            return identity if identity else None
 
-    def get_identity(self, service_name, identity_name):
-        """
-        Retrieve an identity's details.
-        :param service_name: The name of the service
-        :param identity_name: The unique name of the identity
-        :return: Dictionary containing the identity details or None if not found
-        """
-        conn = sqlite3.connect(self.db_name)
-        cursor = conn.cursor()
-
-        cursor.execute('''
-            SELECT * FROM identity WHERE service_name = ? AND identity_name = ?
-        ''', (service_name, identity_name))
-        identity = cursor.fetchone()
-        conn.close()
-
-        if identity:
+        result = self._execute_with_retry(execute_select)
+        if result:
             return {
-                'service_name': identity[1],
-                'identity_name': identity[2],
-                'phone_number': identity[3],
-                'email': identity[4],
-                'username': identity[5],
-                'password': identity[6],
-                'session_file': identity[7],
-                'cookies': json.loads(identity[8]) if identity[8] else None
+                'service_name': result[1],
+                'identity_name': result[2],
+                'phone_number': result[3],
+                'email': result[4],
+                'username': result[5],
+                'password': result[6],
+                'session_file': result[7],
+                'cookies': json.loads(result[8]) if result[8] else None
             }
         else:
-            print(f'Identity "{identity_name}" for service "{service_name}" not found.')
+            print(f'Identity for service "{service_name}" not found.')
             return None
+
+    def _execute_with_retry(self, operation, max_retries=5, delay=0.1):
+        """Retry logic for database operations to handle database locking."""
+        attempt = 0
+        while attempt < max_retries:
+            try:
+                with sqlite3.connect(self.db_name) as conn:
+                    cursor = conn.cursor()
+                    result = operation(cursor)
+                    conn.commit()
+                    return result
+            except sqlite3.OperationalError as e:
+                if 'database is locked' in str(e):
+                    print("Database is locked, retrying...")
+                    attempt += 1
+                    time.sleep(delay)
+                else:
+                    raise
+        raise sqlite3.OperationalError("Failed to execute operation due to database lock.")
+

@@ -1,3 +1,7 @@
+import os
+import shutil
+
+
 def get_subdomains():
     with open("data/output/all_urls.txt") as f:
         subdomains = []
@@ -22,3 +26,10 @@ def get_emails():
                 emails.append(entry.split("mailto:")[1])
             
         return emails
+    
+def clean_data(DATA_DIR):
+    if os.path.exists(DATA_DIR):
+        shutil.rmtree(DATA_DIR)
+        print("Scraped data has been removed.")
+    else:
+        print("No data to clean.")

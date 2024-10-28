@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 import requests
 
-from website.metagoofil import Metagoofil, get_timestamp
+from techka.website.metagoofil import Metagoofil, get_timestamp
 
 OUTPUT_DIR = "data/output"
 ALL_URLS_FILE = os.path.join(OUTPUT_DIR, "all_urls.txt")

@@ -6,5 +6,6 @@ maturin build --release
 pip install target/wheels/*.whl
 
 add encrypted sqlite
+check user exist on all services (enumeration)
 ```
 

@@ -284,6 +284,9 @@ class TelegramService:
         """Display all users across all channels."""
         return self.data_display.display_all_users()
     
+    def display_all_messages(self):
+        return self.data_display.display_all_messages()
+    
     def display_messages_from_user_in_channel(self, user_id, channel_name):
         """Display all messages from a specific user in a specific channel."""
         return self.data_display.display_messages_from_user_in_channel(user_id, channel_name)

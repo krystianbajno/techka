@@ -10,13 +10,14 @@ class DatabaseManager:
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
 
-        # Channels table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS channels (
                 id INTEGER PRIMARY KEY,
                 channel_id INTEGER UNIQUE,
                 title TEXT,
                 username TEXT,
+                type TEXT,           -- channel, group, or supergroup
+                member_count INTEGER,
                 date_created TEXT
             )
         ''')
@@ -61,7 +62,9 @@ class DatabaseManager:
                 message_id INTEGER,
                 file_name TEXT,
                 file_type TEXT,
-                file_path TEXT
+                file_path TEXT,
+                mime_type TEXT,
+                size INTEGER
             )
         ''')
 
@@ -110,5 +113,16 @@ class DatabaseManager:
             VALUES (:message_id, :user_id, :channel_id, :date, :content)
         ''', message_data)
 
+        conn.commit()
+        conn.close()
+
+    def save_channel_info(self, channel_id, title, username, channel_type, member_count, date_created):
+        """Save or update channel info with all relevant details."""
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT OR REPLACE INTO channels (channel_id, title, username, type, member_count, date_created)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (channel_id, title, username, channel_type, member_count, date_created))
         conn.commit()
         conn.close()

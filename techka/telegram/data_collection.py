@@ -1,58 +1,96 @@
+from io import BytesIO
+import os
 import sqlite3
+import time
 from telethon import TelegramClient
 from telethon.tl.functions.channels import GetParticipantsRequest
-from telethon.tl.types import ChannelParticipantsSearch, PeerChannel, MessageMediaDocument
+from telethon.tl.types import ChannelParticipantsSearch, PeerChannel, MessageMediaPhoto, MessageMediaDocument, PeerUser, MessageMediaPoll, MessageMediaWebPage
 from telethon.tl.functions.messages import GetHistoryRequest
-from telethon.errors.rpcerrorlist import ChannelPrivateError, ChatAdminRequiredError, RPCError
+from telethon.errors.rpcerrorlist import ChannelPrivateError, ChatAdminRequiredError, RPCError, MessageNotModifiedError
 from telethon.tl.types import Channel, Chat
+from techka.telegram.telegram_database import DatabaseManager
+from telethon.tl.types import (
+    MessageMediaDocument, MessageMediaPhoto, Document, Photo, 
+    DocumentAttributeFilename, PeerUser
+)
+from tqdm import tqdm  # Use tqdm for a clean progress bar
 
 class DataCollector:
     def __init__(self, client, db_manager):
         self.client: TelegramClient = client
-        self.db_manager = db_manager
+        self.db_manager: DatabaseManager = db_manager
 
     ### Channel Collection ###
-
     def collect_all_channels(self):
-        """Collect all channels accessible to the account."""
+        """Collect all accessible channels, groups, and supergroups and save them with member counts."""
         dialogs = self.client.get_dialogs()
         for dialog in dialogs:
-            if dialog.is_channel:
-                self._save_channel(dialog.entity)
-                
+            if isinstance(dialog.entity, (Channel, Chat)):
+                entity = dialog.entity
+                channel_type = self._determine_channel_type(entity)
+
+                member_count = getattr(entity, 'participant_count', 0)
+                date_created = entity.date.strftime("%Y-%m-%d %H:%M:%S") if entity.date else None
+
+                self.db_manager.save_channel_info(
+                    channel_id=entity.id,
+                    title=entity.title,
+                    username=getattr(entity, 'username', None),
+                    channel_type=channel_type,
+                    member_count=member_count,
+                    date_created=date_created
+                )
+                print(f"Collected: {entity.id}, {entity.title}, {channel_type}, Members/Subscribers: {member_count}")
+
+    def _determine_channel_type(self, entity):
+        """Determine the type of a channel entity: channel, group, or supergroup."""
+        if hasattr(entity, 'broadcast') and entity.broadcast:
+            return "channel"  # Regular broadcast channel
+        elif hasattr(entity, 'megagroup') and entity.megagroup:
+            return "supergroup"  # Large discussion group
+        else:
+            return "group"  # Regular group
+        
+    def _get_member_count(self, entity):
+        """Get the member count for the channel, group, or supergroup."""
+        try:
+            participants = self.client.get_participants(entity)
+            return participants.total  # Member count
+        except Exception as e:
+            print(f"Error retrieving member count for {entity.title}: {e}")
+            return 0  # Default if count retrieval fails
+
     def collect_all_users(self):
         """Collect all users across all channels and save them in the database."""
-        conn = sqlite3.connect(self.db_name)
+        conn = sqlite3.connect(self.db_manager.db_name)
         cursor = conn.cursor()
 
-        # Fetch all channels from the database
         cursor.execute("SELECT channel_id, title FROM channels")
         channels = cursor.fetchall()
 
         for channel_id, channel_name in channels:
             print(f"Collecting users in channel: {channel_name}")
-            self.collect_users_in_channel(channel_name)
+            self.collect_active_users_in_channel(channel_name)
 
         conn.close()
         
     def collect_active_users_in_channel(self, entity_name_or_id):
         """Collect active users by retrieving messages from the specified entity."""
         try:
-            # Get the entity (could be channel, group, or chat)
             entity = self.client.get_entity(entity_name_or_id)
-            active_users = set()  # Store unique user IDs to avoid duplicates
+            active_users = set()
 
-            # Iterate over messages to collect active users
             for message in self.client.iter_messages(entity):
-                if message.sender_id:  # Ensure there is a sender
-                    active_users.add(message.sender_id)
-                    
-                    # Save user information in the database
+                # Check if sender is a user and extract user_id safely
+                if isinstance(message.from_id, PeerUser):
+                    user_id = message.from_id.user_id
+                    active_users.add(user_id)
+
                     user_data = {
-                        'user_id': message.sender_id,
-                        'username': message.from_id.user_id if message.from_id else None,
-                        'first_name': message.sender.first_name if message.sender else None,
-                        'last_name': message.sender.last_name if message.sender else None,
+                        'user_id': user_id,
+                        'username': getattr(message.sender, 'username', None),
+                        'first_name': getattr(message.sender, 'first_name', None),
+                        'last_name': getattr(message.sender, 'last_name', None),
                     }
                     self.db_manager.save_user(user_data, entity.id)
                     print(f"Collected active user: {user_data}")
@@ -63,14 +101,11 @@ class DataCollector:
             print(f"Failed to retrieve messages from '{entity_name_or_id}': {e}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
-
+            
     def collect_users_in_channel(self, channel_name):
-        """Collect all participants in the specified channel or group."""
         try:
-            # Resolve the entity for the given channel name
             entity = self.client.get_entity(channel_name)
             
-            # Ensure the entity is a Channel or Chat type
             if not isinstance(entity, (Channel, Chat)):
                 print(f"The provided entity '{channel_name}' is not a valid channel or group.")
                 return
@@ -132,25 +167,42 @@ class DataCollector:
 
     ### Message Collection ###
 
-    def collect_messages_in_channel(self, channel_name):
-        """Collect all messages from a specific channel."""
-        channel = self.client.get_entity(channel_name)
+    def collect_messages_in_channel(self, channel_identifier):
+        """Collect all messages from a specific channel or group, using either name or ID."""
+        # Determine if the identifier is an ID or a name
+        channel_identifier = int(channel_identifier)
+        entity = PeerChannel(channel_identifier)
+        channel_id = channel_identifier  # Directly use the identifier as channel_id
+
+
         offset_id, limit = 0, 100
 
         while True:
-            history = self.client(GetHistoryRequest(
-                peer=PeerChannel(channel.id), limit=limit, offset_id=offset_id,
-                max_id=0, min_id=0, add_offset=0, hash=0))
+            try:
+                history = self.client(GetHistoryRequest(
+                    peer=entity,
+                    limit=limit,
+                    offset_id=offset_id,
+                    offset_date=None,
+                    max_id=0,
+                    min_id=0,
+                    add_offset=0,
+                    hash=0
+                ))
 
-            if not history.messages:
+                if not history.messages:
+                    break
+
+                for message in history.messages:
+                    self._save_message(message, channel_id)
+                    if message.media and isinstance(message.media, MessageMediaDocument):
+                        self._save_attachment(message)
+
+                offset_id = history.messages[-1].id
+
+            except Exception as e:
+                print(f"Failed to retrieve messages: {e}")
                 break
-
-            for message in history.messages:
-                self._save_message(message, channel.id)
-                if message.media and isinstance(message.media, MessageMediaDocument):
-                    self._save_attachment(message)
-
-            offset_id = history.messages[-1].id
 
     def collect_messages_from_user(self, user_id):
         """Collect all messages across channels sent by a specific user."""
@@ -184,14 +236,11 @@ class DataCollector:
             offset_id = history.messages[-1].id
 
     def collect_messages_from_multiple_channels(self, channel_names=None):
-        """
-        Collect messages from specified channels, or all channels if none are specified.
-        """
         conn = sqlite3.connect(self.db_manager.db_name)
         cursor = conn.cursor()
 
         if channel_names:
-            cursor.execute('SELECT channel_id FROM channels WHERE title IN (?)', (channel_names,))
+            cursor.execute('SELECT channel_id FROM channels WHERE title IN (?) or channel_id in (?)', (channel_names,channel_names,))
         else:
             cursor.execute('SELECT channel_id FROM channels')
         
@@ -200,33 +249,82 @@ class DataCollector:
             self.collect_messages_in_channel(channel_id)
 
     def _save_message(self, message, channel_id):
-        """Helper method to save a message to the database."""
+        """Save a message to the database, including its date and handling cases where user_id is missing."""
         conn = sqlite3.connect(self.db_manager.db_name)
         cursor = conn.cursor()
+
+        user_id = message.from_id.user_id if isinstance(message.from_id, PeerUser) else None
+        message_date = message.date.strftime("%Y-%m-%d %H:%M:%S") if message.date else None
+
         cursor.execute('SELECT 1 FROM messages WHERE message_id = ?', (message.id,))
         if cursor.fetchone() is None:
             cursor.execute('''
                 INSERT INTO messages (message_id, channel_id, user_id, date, content)
                 VALUES (?, ?, ?, ?, ?)
-            ''', (message.id, channel_id, message.from_id.user_id, message.date.strftime("%Y-%m-%d %H:%M:%S"), message.message))
-            print(f"Collected message ID: {message.id}")
+            ''', (message.id, channel_id, user_id, message_date, message.message))
+            print(f"Collected message ID: {message.id}, Date: {message_date}")
+
         conn.commit()
         conn.close()
 
-    ### Attachment Collection ###
+    def _save_attachment(self, message, retries=3):
+        """Save attachment, checking for duplicates with (message_id, file_name) as the unique key."""
+        conn = sqlite3.connect(self.db_manager.db_name)
+        cursor = conn.cursor()
 
-    def _save_attachment(self, message):
-        """Helper method to save attachments from a message to the database."""
-        file_path = self.client.download_media(message, file='attachments/')
-        if file_path:
-            conn = sqlite3.connect(self.db_manager.db_name)
-            cursor = conn.cursor()
-            file_name = os.path.basename(file_path)
-            file_type = os.path.splitext(file_name)[1].replace('.', '')
-            cursor.execute('''
-                INSERT INTO attachments (message_id, file_name, file_type, file_path)
-                VALUES (?, ?, ?, ?)
-            ''', (message.id, file_name, file_type, file_path))
-            conn.commit()
+        document = message.media.document if isinstance(message.media, MessageMediaDocument) else None
+        if not document:
+            print(f"No document found in message ID {message.id}")
+            return
+
+        # Extract file name and define the file path
+        file_name = self._get_file_name(document)
+        file_path = os.path.join('attachments/', file_name)
+
+        # Check if the attachment already exists
+        cursor.execute('SELECT 1 FROM attachments WHERE message_id = ? AND file_name = ?', (message.id, file_name))
+        if cursor.fetchone():
+            print(f"Skipping duplicate attachment for message ID {message.id} with file name {file_name}")
             conn.close()
-            print(f'Downloaded and saved attachment to {file_path}')
+            return  # Skip the download if it exists
+
+        print(f"Starting download for message ID {message.id} with file name {file_name}")
+        attempt = 0
+
+        while attempt < retries:
+            try:
+                with open(file_path, 'wb') as file:
+                    buffer = BytesIO()
+                    self.client.download_media(document, file=buffer)
+                    buffer.seek(0)  # Reset buffer position for reading
+                    file.write(buffer.read())
+
+                # Extract metadata and save details to the database
+                mime_type = document.mime_type or "application/octet-stream"
+                file_size = document.size
+                cursor.execute('''
+                    INSERT INTO attachments (message_id, file_name, file_type, file_path, mime_type, size)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (message.id, file_name, mime_type.split('/')[-1], file_path, mime_type, file_size))
+                print(f"Successfully downloaded and saved {mime_type} for message ID {message.id} at {file_path}")
+
+                conn.commit()
+                break  # Exit retry loop on successful download
+
+            except TimeoutError:
+                attempt += 1
+                wait_time = 2 ** attempt
+                print(f"TimeoutError, retry {attempt}/{retries}. Waiting {wait_time} seconds.")
+                time.sleep(wait_time)
+            except Exception as e:
+                print(f"Unexpected error during download for message ID {message.id}: {e}")
+                break
+            
+        conn.close()
+
+    def _get_file_name(self, document):
+        """Extract or create a file name for the document."""
+        for attr in document.attributes:
+            if isinstance(attr, DocumentAttributeFilename):
+                return attr.file_name
+        return f"{document.id}.dat"  # Default to document ID if no file name

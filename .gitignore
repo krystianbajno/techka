@@ -4,3 +4,5 @@ venv/
 techka/rust_bindings/target/
 *.db
 *.session
+*.session-journal
+attachments/

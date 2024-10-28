@@ -7,6 +7,7 @@ class TelegramHandler:
     def init_commands(self, subparsers):
         telegram_parser = subparsers.add_parser("telegram", help="Telegram related commands")
         telegram_subparsers = telegram_parser.add_subparsers(dest="action", required=True)
+        
         # Collect Command
         telegram_collect_parser = telegram_subparsers.add_parser("collect", help="Collect data from Telegram")
         telegram_collect_parser.add_argument("--channels", action="store_true", help="Collect all channels")
@@ -72,7 +73,6 @@ class TelegramHandler:
         if args.messages:
             if args.channel:
                 self.telegram_service.collect_messages_in_channel(args.channel)
-                print(f"Collected messages from channel: {args.channel}")
             else:
                 self.telegram_service.collect_all_messages()
                 print("Collected all messages across channels.")
@@ -117,11 +117,9 @@ class TelegramHandler:
     def _display(self, args):
         if args.channels:
             if args.user:
-                # Display channels that a specific user has participated in
                 self.telegram_service.display_channels_for_user(args.user)
                 print(f"Channels for user ID {args.user}:")
             else:
-                # Display all collected channels
                 self.telegram_service.display_all_channels()
                 print("All collected channels:")
 
@@ -134,19 +132,15 @@ class TelegramHandler:
         if args.messages:
             if args.user and args.channel:
                 messages = self.telegram_service.display_messages_from_user_in_channel(args.user, args.channel)
-                print(f"Messages from user ID {args.user} in channel {args.channel}:")
+                print(f"Messages from user ID {args.user} in channel {args.channel}.")
             elif args.user:
                 messages = self.telegram_service.display_messages_from_user(args.user)
-                print(f"All messages from user ID {args.user} across all channels:")
+                print(f"All messages from user ID {args.user} across all channels.")
             elif args.channel:
                 messages = self.telegram_service.display_messages_in_channel(args.channel)
-                print(f"Messages in channel {args.channel}:")
+                print(f"Messages in channel {args.channel}.")
             else:
                 messages = self.telegram_service.display_all_messages()
-                print("All messages across all channels:")
-
-            for message in messages:
-                print(message)
                 
 
     def _export(self, args):
@@ -155,7 +149,6 @@ class TelegramHandler:
         channel_id = args.channel_id
         user_id = args.user_id
 
-        # Export attachments to specified directory
         self.telegram_service.export_attachments(export_dir, attachment_type=attachment_type, channel_id=channel_id, user_id=user_id)
         print(f"Attachments exported to {export_dir}")
 

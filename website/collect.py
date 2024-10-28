@@ -10,8 +10,7 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 import requests
 
-# add metagoofil
-# add auto download katana
+from website.metagoofil import Metagoofil, get_timestamp
 
 OUTPUT_DIR = "data/output"
 ALL_URLS_FILE = os.path.join(OUTPUT_DIR, "all_urls.txt")
@@ -163,6 +162,36 @@ def download_pdf(pdf_url, output_dir):
 def hash_url(url):
     return hashlib.md5(url.encode()).hexdigest()
 
+
+def run_metagoofil(domain, save_directory):
+    save_links = True
+    download_files = True
+    print(f"[*] Downloaded files will be saved here: {save_directory}")
+    if not os.path.exists(save_directory):
+        print(f"[+] Creating folder: {save_directory}")
+        os.mkdir(save_directory)
+
+    if save_links is False:
+        save_links = None
+    elif save_links is None:
+        save_links = f"html_links_{get_timestamp()}.txt"
+
+    args = {}
+    args["save_directory"] = save_directory
+    args["domain"] = domain
+    args["save_links"] = save_links
+    args["download_files"] = download_files
+    args["delay"] = 1
+    args["url_timeout"] = 30
+    args["search_max"] = 100
+    args["download_file_limit"] = 100
+    args["number_of_threads"] = 1
+    args["file_types"] = ["pdf","docx","doc","txt","xml"]
+    args["user_agent"] = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+
+    mg = Metagoofil(**args)
+    mg.go()
+
 def collect(target, auth_header=None, target_only=False):
     METADATA = []
 
@@ -183,5 +212,7 @@ def collect(target, auth_header=None, target_only=False):
     run_playwright_for_content(ALL_URLS_FILE, SCRAPED_DIR, METADATA, auth_header)
     
     extract_and_download_pdfs(SCRAPED_DIR)
+    
+    run_metagoofil(target, os.path.join(os.path.join(SCRAPED_DIR, target), "metagoofil"))
 
     print("Finished")

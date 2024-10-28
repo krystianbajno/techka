@@ -7,5 +7,8 @@ pip install target/wheels/*.whl
 
 add encrypted sqlite
 check user exist on all services (enumeration)
+channel statistics - amount of users in channel
+channel convert to entity
+minor bugfix
 ```
 

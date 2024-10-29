@@ -162,11 +162,24 @@ def download_pdf(pdf_url, output_dir):
 def hash_url(url):
     return hashlib.md5(url.encode()).hexdigest()
 
-
 def run_techkagoofil(domain, save_directory):
     print(f"[*] Running TechkaGoofil for domain: {domain}")
-    techkagoofil = TechkaGoofil(domain=domain, output_dir=save_directory)
-    techkagoofil.run()
+    urls_out_path = os.path.join(OUTPUT_DIR, f"techkagoofil_urls_{domain}.txt")
+    output_json_path = os.path.join(OUTPUT_DIR, f"metagoofil_filebindings_{domain}.txt")
+
+    techkagoofil = TechkaGoofil(
+        domain=domain,
+        output_dir=save_directory
+    )
+    links, file_metadata = techkagoofil.run()
+    
+    with open(output_json_path, "w") as f:
+        json.dump(file_metadata, f, indent=4)
+        print(f"+ Metadata saved to {output_json_path}")
+    
+    with open(urls_out_path, "w") as f:
+        f.write("\n".join(links))
+        print(f"+ Links saved to {urls_out_path}")
 
 def collect(target, auth_header=None, target_only=False):
     METADATA = []

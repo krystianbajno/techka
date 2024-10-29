@@ -1,5 +1,7 @@
 import os
 
+from techka.file.processing import get_emails, get_keywords, get_pdfs
+
 class FileHandler:
     def init_commands(self, subparsers):
         file_parser = subparsers.add_parser("file", help="File related commands")
@@ -20,21 +22,16 @@ class FileHandler:
             action_map[action](args)
 
     def _file_process(self, args):
-        from website_processor import DataProcessor
-        processor = DataProcessor()
-
         if os.path.exists(args.filepath):
             if args.emails:
-                emails = processor.get_emails_from_file(args.filepath)
-                print(f"Extracted Emails: {emails}")
+                for email in get_emails(args.filepath):
+                    print(email) 
 
             if args.pdfs:
-                pdf_text = processor.get_pdf_text(args.filepath)
-                print("Extracted PDF Text:")
-                print(pdf_text)
+                for pdf_text in get_pdfs(args.filepath):
+                    print(pdf_text)
 
             if args.keywords:
-                keywords_result = processor.find_keywords_in_file(args.filepath, args.keywords)
-                print(f"Keywords found in file: {keywords_result}")
+                print(get_keywords(args.filepath, args.keywords))
         else:
             print(f"File {args.filepath} does not exist.")

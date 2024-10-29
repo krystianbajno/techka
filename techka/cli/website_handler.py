@@ -1,8 +1,9 @@
 import os
 from techka.website.collect import collect
-from techka.website.processing import clean_data, get_emails, get_subdomains
+from techka.website.processing import clean_data, get_emails, get_keywords, get_pdfs, get_subdomains
 
 DATA_DIR = "data/output"
+ALL_URLS = "data/output/all_urls.txt"
 
 class WebsiteHandler:
     def init_commands(self, subparsers):
@@ -41,23 +42,18 @@ class WebsiteHandler:
         print("Website data cleaned.")
 
     def _website_process(self, args):
-        from website_processor import DataProcessor
-        processor = DataProcessor()
-
         if args.subdomains:
-            [print(subdomain) for subdomain in get_subdomains()]
+            for subdomain in get_subdomains(ALL_URLS):
+                print(subdomain)
 
         if args.emails:
-            emails = processor.get_emails(DATA_DIR)
-            [print(email) for email in get_emails()]
-            print(f"Extracted Emails: {emails}")
+            for email in get_emails(DATA_DIR):
+                print(email) 
 
         if args.pdfs:
-            pdf_texts = processor.get_pdfs(DATA_DIR)
-            print("Extracted PDF Texts:")
-            for pdf_text in pdf_texts:
+            for pdf_text in get_pdfs(DATA_DIR):
                 print(pdf_text)
 
         if args.keywords:
-            keywords_result = processor.find_keywords(DATA_DIR, args.keywords)
-            print(f"Keywords found in collected data: {keywords_result}")
+            print(get_keywords(DATA_DIR, args.keywords))
+

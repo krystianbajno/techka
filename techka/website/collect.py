@@ -165,7 +165,7 @@ def hash_url(url):
 def run_techkagoofil(domain, save_directory):
     print(f"[*] Running TechkaGoofil for domain: {domain}")
     urls_out_path = os.path.join(OUTPUT_DIR, f"techkagoofil_urls_{domain}.txt")
-    output_json_path = os.path.join(OUTPUT_DIR, f"metagoofil_filebindings_{domain}.txt")
+    output_json_path = os.path.join(OUTPUT_DIR, f"techkagoofil_filebindings_{domain}.txt")
 
     techkagoofil = TechkaGoofil(
         domain=domain,

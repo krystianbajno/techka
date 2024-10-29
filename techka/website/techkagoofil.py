@@ -61,14 +61,14 @@ class TechkaGoofil:
         """Extracts file links from the search engine content and filters by specified file types."""
         soup = BeautifulSoup(content, 'html.parser')
         links = set()
+        
         for link in soup.find_all('a', href=True):
-            url = link['href']
-            if any(url.endswith(ext) for ext in self.file_types):
-                full_url = urljoin(self.domain, url)
-                if full_url not in self.seen_urls:
-                    self.seen_urls.add(full_url)
-                    links.add(full_url)
+            for link in soup.find_all('a', href=True):
+                href = link['href']
+                links.add(href)
+                
         return links
+
 
     def go_to_next_page(self, engine):
         """Navigate to the next page for each search engine."""
@@ -108,16 +108,19 @@ class TechkaGoofil:
 
     def download_file(self, url):
         """Downloads a single file from the given URL."""
-        response = requests.get(url, stream=True)
-        if response.status_code == 200:
-            filename = os.path.basename(urlparse(url).path)
-            filepath = os.path.join(self.output_dir, filename)
-            with open(filepath, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            print(f"Downloaded {filename}")
-        else:
-            print(f"Failed to download {url}")
+        try:
+            response = requests.get(url, stream=True)
+            if response.status_code == 200:
+                filename = os.path.basename(urlparse(url).path)
+                filepath = os.path.join(self.output_dir, filename)
+                with open(filepath, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                print(f"Downloaded {filename}")
+            else:
+                (f"Failed to download {url}")
+        except:
+            (f"Failed to download {url}")
 
     def download_files(self, links):
         """Downloads multiple files concurrently from the collected links."""
@@ -133,6 +136,7 @@ class TechkaGoofil:
         self.close_browser()
 
         print(f"Downloading {len(all_links)} unique files.")
+        
         self.download_files(all_links)
         
         print(f"Found {len(all_links)} unique files without downloading.")

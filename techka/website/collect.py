@@ -103,7 +103,7 @@ def run_playwright_for_content(urls_file, scraped_dir, metadata, auth_header=Non
     print(f"Metadata saved to {METADATA_FILE}")
 
 
-def extract_and_download_pdfs(scraped_dir):
+def extract_and_download_files(scraped_dir, file_extensions):
     for domain in (d for d in os.listdir(scraped_dir) if os.path.isdir(os.path.join(scraped_dir, d))):
         for root, _, files in os.walk(os.path.join(scraped_dir, domain)):
             for file in files:
@@ -112,27 +112,28 @@ def extract_and_download_pdfs(scraped_dir):
                     with open(file_path, "r", encoding="utf-8") as html_file:
                         soup = BeautifulSoup(html_file, "html.parser")
                         base_url = f"https://{domain}/" + os.path.relpath(root, os.path.join(scraped_dir, domain)).replace("\\", "/") + "/"
-                        pdf_links = [
+                        
+                        file_links = [
                             urljoin(base_url, link.get('href')) for link in soup.find_all('a', href=True)
-                            if link.get('href').endswith('.pdf')
+                            if any(link.get('href').endswith(f'.{ext}') for ext in file_extensions)
                         ]
-                        for pdf_url in pdf_links:
-                            download_pdf(pdf_url, os.path.join(root))  
+                        for file_url in file_links:
+                            download_file(file_url, os.path.join(root))  
                 except Exception as e:
                     print(f"Error occurred with {file_path} - {e}")
 
-def download_pdf(pdf_url, output_dir):
+def download_file(file_url, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     try:
-        response = requests.get(pdf_url, stream=True)
+        response = requests.get(file_url, stream=True)
         response.raise_for_status()
-        pdf_name = os.path.basename(pdf_url)
-        with open(os.path.join(output_dir, pdf_name), "wb") as pdf_file:
+        file_name = os.path.basename(file_url)
+        with open(os.path.join(output_dir, file_name), "wb") as file:
             for chunk in response.iter_content(chunk_size=8192):
-                pdf_file.write(chunk)
-        print(f"Downloaded PDF: {pdf_name}")
+                file.write(chunk)
+        print(f"Downloaded file: {file_name}")
     except requests.HTTPError as e:
-        print(f"PDF download error from {pdf_url}: {e}")
+        print(f"File download error from {file_url}: {e}")
         
 def run_techkagoofil(domain, save_directory, slow_download=False, max_pages=200):
     print(f"[*] Running TechkaGoofil for domain: {domain}")
@@ -175,7 +176,7 @@ def collect(target, auth_header=None, target_only=False, slow_download=False, te
 
         run_playwright_for_content(ALL_URLS_FILE, SCRAPED_DIR, metadata, auth_header)
         
-        extract_and_download_pdfs(SCRAPED_DIR)
+        extract_and_download_files(SCRAPED_DIR, ["pdf", "jpeg", "webp", "dat", "sql" "webm", "bin", "docx", "doc", "pptx", "xlsx", "jpg", "png", "txt", "bak", "backup", "xls", "csv", "md", "cpp", "py", "js"])
 
     run_techkagoofil(target, os.path.join(SCRAPED_DIR, target, "techkagoofil"), slow_download=slow_download, max_pages=max_pages)
 

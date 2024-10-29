@@ -50,8 +50,6 @@ pub fn search_patterns_in_files(files: &[PathBuf], pattern: &Regex) -> Vec<Strin
             for match_found in pattern.find_iter(&content) {
                 results.push(match_found.as_str().to_string());
             }
-        } else {
-            eprintln!("No content extracted from file {:?}", file);
         }
     }
 

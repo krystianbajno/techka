@@ -13,7 +13,7 @@ def get_subdomains(ALL_URLS):
                 if subdomain not in subdomains: 
                     subdomains.append(subdomain)
             
-        return subdomains
+        return set(subdomains)
     
 def get_pdfs(DATA_DIR):
     from website_processor import DataProcessor
@@ -36,7 +36,7 @@ def get_emails(DATA_DIR):
                 
     emails.extend(processor.get_emails(DATA_DIR))
             
-    return emails
+    return set(emails)
 
 def get_keywords(DATA_DIR, keywords):
     from website_processor import DataProcessor

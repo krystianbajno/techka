@@ -1,8 +1,11 @@
 import argparse
 from techka.auth.auth_service import AuthService
+from techka.cli.last_usage import check_last_usage
 from techka.cli.website_handler import WebsiteHandler
 from techka.cli.file_handler import FileHandler
 from techka.cli.telegram_handler import TelegramHandler
+from techka.cli.logo import logo
+
 
 class CliHandler:
     def __init__(self):
@@ -34,9 +37,15 @@ class CliHandler:
         self.telegram_handler.init_commands(self.subparsers)
 
     def execute(self, args=None):
+        # Check last usage and display logo if needed
+        if check_last_usage():
+            print(logo())
+
+        # Parse and execute command
         parsed_args = self.parser.parse_args(args)
         command = parsed_args.command
         if command in self.command_map:
             self.command_map[command](parsed_args)
         else:
             print(f"Unknown command: {command}")
+

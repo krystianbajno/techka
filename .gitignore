@@ -6,3 +6,4 @@ techka/rust_bindings/target/
 *.session
 *.session-journal
 attachments/
+.usage.dat

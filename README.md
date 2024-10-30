@@ -207,6 +207,7 @@ add technology detection save to file on collect --detect
 add nikto --nikto
 add techka search query - multiple search engines and save title and urls to file and stdout, similar to techkagoofil
 
+--no-download
 
 dork module
 site:example.com
@@ -215,7 +216,11 @@ site:example.com filetype:<ext>
 site:example.com intitle:"SECRET"
 site:example.com "@example.com" - save description, phone numbers possible
 
---no-download
+site:example.com indexof?? find cool dorks on exploit db
+site:example.com
+site:example.com
+
+dork collect --custom-dork
 
 links collect
 links process

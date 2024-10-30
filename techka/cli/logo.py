@@ -13,9 +13,11 @@ def logo():
         GREEN,
         ""
     ]
+    
     choice_img = random.choice(IMAGES)
     choice_color = random.choice(colors)
     choice_text = random.choice(TEXTS)
+    
     return f"""
 {RED}{BOLD}T E C H K A{RESET} v4.20.69 - {BOLD}{current_date.year}{RESET}
 
@@ -23,6 +25,8 @@ def logo():
 {choice_text}
 
 {RED}{BOLD}T E C H K A{RESET} v4.20.69 - {BOLD}{current_date.year}{RESET}
+
+{BOLD}{GREEN}https://github.com/krystianbajno/techka{RESET}
 """
 
 

@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 import subprocess
@@ -13,29 +14,51 @@ OUTPUT_DIR = "data/output"
 ALL_URLS_FILE = os.path.join(OUTPUT_DIR, "all_urls.txt")
 SCRAPED_DIR = os.path.join(OUTPUT_DIR, "scraped")
 METADATA_FILE = os.path.join(OUTPUT_DIR, "metadata.json")
-SCRAPING_DEPTH = 5
+SCRAPING_DEPTH = 10
 CONCURRENT_DOWNLOAD_WORKERS = 5
 
 os.makedirs(SCRAPED_DIR, exist_ok=True)
 
 def run_katana_for_urls(target, all_urls_file, auth_header=None, target_only=False):
+    logger = logging.getLogger("KatanaLogger")
+    logger.setLevel(logging.INFO)
+    
+    file_handler = logging.FileHandler(all_urls_file)
+    file_handler.setLevel(logging.INFO)
+    
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_formatter = logging.Formatter('%(asctime)s - %(message)s')
+    console_handler.setFormatter(console_formatter)
+    
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
     katana_cmd = [
-        "katana", "-jc", "-u", target, "-d", str(SCRAPING_DEPTH),
-        "-headless", "-known-files", "all", "-mdc", 'status_code == 200'
+        "katana",  "-u", target, "-d", str(SCRAPING_DEPTH), "-jsluice", "-js-crawl",
+        "-headless", "-kf", "robotstxt,sitemapxml", "-mdc", 'status_code == 200'
     ]
-    if target_only == True:
+    if target_only:
         katana_cmd.extend(["-fs", "fqdn"])
     if auth_header:
         key, value = auth_header.split("=", 1)
         katana_cmd.extend(["-H", f"{key}:{value}"])
 
     try:
-        with open(all_urls_file, "w") as f:
-            subprocess.run(katana_cmd, stdout=f, check=True)
-        print(f"URLs collected in {all_urls_file}")
-    except subprocess.CalledProcessError as e:
-        print(f"Katana error: {e}")
-        exit(1)
+        process = subprocess.Popen(katana_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1)
+        
+        for line in iter(process.stdout.readline, ''):
+            logger.info(line.strip())
+
+        process.stdout.close()
+        process.wait()
+
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, katana_cmd)
+    finally:
+        logger.removeHandler(file_handler)
+        logger.removeHandler(console_handler)
+        
 
 def download_full_page_with_js(url, output_file, auth_header=None):
     with sync_playwright() as p:
@@ -160,10 +183,11 @@ def run_techkagoofil(domain, save_directory, slow_download=False, max_pages=200)
     except Exception as e:
         print(f"Error running TechkaGoofil for domain {domain}: {e}")
 
-def collect(target, auth_header=None, target_only=False, slow_download=False, techkagoofil_only=False, max_pages=200):
-    metadata = []
-
-    if not techkagoofil_only:
+def collect(target, auth_header=None, target_only=False, slow_download=False, techkagoofil=False, scrap=False, max_pages=200):
+    
+    if scrap:
+        metadata = []
+            
         if not os.path.exists(ALL_URLS_FILE) \
             or (os.path.exists(ALL_URLS_FILE) \
                 and input(f"{ALL_URLS_FILE} exists. Re-run Katana? (y/n): ").strip().lower() == 'y'):
@@ -178,9 +202,10 @@ def collect(target, auth_header=None, target_only=False, slow_download=False, te
         
         extract_and_download_files(SCRAPED_DIR, ["pdf", "jpeg", "webp", "dat", "sql" "webm", "bin", "docx", "doc", "pptx", "xlsx", "jpg", "png", "txt", "bak", "backup", "xls", "csv", "md", "cpp", "py", "js"])
 
-    run_techkagoofil(target, os.path.join(SCRAPED_DIR, target, "techkagoofil"), slow_download=slow_download, max_pages=max_pages)
-
-    with open(METADATA_FILE, "w", encoding="utf-8") as json_file:
-        json.dump(metadata, json_file, ensure_ascii=False, indent=4)
-    
+        with open(METADATA_FILE, "w", encoding="utf-8") as json_file:
+            json.dump(metadata, json_file, ensure_ascii=False, indent=4)
+        
+    if techkagoofil:
+        run_techkagoofil(target, os.path.join(SCRAPED_DIR, target, "techkagoofil"), slow_download=slow_download, max_pages=max_pages)
+        
     print("Collection finished.")

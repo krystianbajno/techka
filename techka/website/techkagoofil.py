@@ -55,7 +55,6 @@ class TechkaGoofil:
                 all_links.update(new_links)
                 if not self.go_to_next_page(engine_url):
                     break
-                time.sleep(1)
         except Exception as e:
             print(f"Search error on {engine_url} for query '{query}': {e}")
 
@@ -64,7 +63,6 @@ class TechkaGoofil:
     def accept_cookies(self):
         try:
             self.page.click("button:has-text('Accept'), button:has-text('Allow'), button:has-text('Allow all'), button:has-text('I agree')", timeout=3000)
-            time.sleep(1)
         except Exception:
             pass
 
@@ -152,20 +150,29 @@ class TechkaGoofil:
     def search_all_engines(self):
         all_links = set()
         for file_type in self.file_types:
-            query = f"filetype:{file_type} site:{self.domain}"
+            query_hm = {
+                "google": f"filetype:{file_type} site:{self.domain}",
+                "yandex": f"mime:{file_type} site:{self.domain}",
+                "duckduckgo": f"filetype:{file_type} site:{self.domain}",
+                "bing": f"filetype:{file_type} site:{self.domain}",
+            }
+            
             for engine_name, engine_url in {
-                "google": f"https://www.google.com/search?q={query}",
-                "yandex": f"https://yandex.com/search/?text={query}",
-                "duckduckgo": f"https://duckduckgo.com/?q={query}",
-                "bing": f"https://www.bing.com/search?q={query}"
+                "google": f"https://www.google.com/search?q=",
+                "yandex": f"https://yandex.com/search/?text=",
+                "duckduckgo": f"https://duckduckgo.com/?q=",
+                "bing": f"https://www.bing.com/search?q="
             }.items():
                 try:
                     print(f"Searching {engine_name} for .{file_type} files on {self.domain}")
+
+                    query = query_hm[engine_name]
+                    engine_url = engine_url + query
+                    
                     links = self._search_files_on_engine(query, engine_url, engine_name)
                     all_links.update(links)
                 except Exception as e:
                     print(f"Search error on {engine_name}: {e}")
-                time.sleep(2)
         return all_links
 
     def download_file(self, url, title):

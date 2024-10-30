@@ -1,21 +1,5 @@
-# Installation
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-playwright install
-cd rust_bindings
-maturin build --release
-pip install target/wheels/*.whl
 ```
-
-# Usage
-```bash
-(venv) ➜  techka git:(main) ✗ python3 main.py --full-help
-
 T E C H K A v4.20.69 - 2024
-
 
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣞⣄⣠⢤⡤⠄⠐⢦⡴⠀⣲⣿⣄⣀⣀⠠⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -36,8 +20,22 @@ T E C H K A v4.20.69 - 2024
 .45 huh? Incredible.
 
 T E C H K A v4.20.69 - 2024
+```
 
+# Installation
 
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+playwright install
+cd rust_bindings
+maturin build --release
+pip install target/wheels/*.whl
+```
+
+# Usage
+```bash
 Main Command Help:
 
 usage: main.py [-h] [--full-help] {website,file,telegram} ...
@@ -204,4 +202,10 @@ options:
 
 ##### /// TODO:
 check user exists on all services (enumeration)
-
+jsluice for credential detection + rust - website process --vulns, basically sastcannon integration
+add technology detection save to file on collect --detect
+add nikto --nikto
+add techka search query - multiple search engines and save title and urls to file and stdout, similar to techkagoofil
+integrate sastcannon
+integrate eventhorizon
+integrate subduer

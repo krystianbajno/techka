@@ -1,4 +1,3 @@
-import os
 from techka.website.collect import collect
 from techka.website.processing import clean_data, get_emails, get_keywords, get_pdfs, get_subdomains
 
@@ -17,7 +16,8 @@ class WebsiteHandler:
         collect_parser.add_argument("--max-pages", type=int, help="Limit on pages to collect", required=False, default=200)
         collect_parser.add_argument("--auth-header", type=str, help="Auth header in 'Key=Value' format", required=False)
         collect_parser.add_argument("--target-only", action="store_true", help="Limit to target domain only", required=False)
-        collect_parser.add_argument("--techkagoofil", action="store_true", help="Use only techkagoofil", required=False)
+        collect_parser.add_argument("--techkagoofil", action="store_true", help="Passively find documents using dorks and public search engines", required=False)
+        collect_parser.add_argument("--scrap", action="store_true", help="Clone website and save", required=False)
 
         # Clean command
         website_subparsers.add_parser("clean", help="Remove all collected data")
@@ -42,17 +42,18 @@ class WebsiteHandler:
     def _handle_collect(self, args):
         collect(
             args.url, 
+            scrap=args.scrap,
             auth_header=args.auth_header, 
             target_only=args.target_only, 
             slow_download=args.slow_download, 
             max_pages=args.max_pages, 
-            techkagoofil_only=args.techkagoofil
+            techkagoofil=args.techkagoofil
         )
         
         print("Data collection completed.")
 
     def _handle_clean(self, args):
-        clean_data()
+        clean_data(DATA_DIR)
         print("Collected data has been cleaned.")
 
     def _handle_process(self, args):

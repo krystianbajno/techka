@@ -217,3 +217,5 @@ site:example.com
 site:example.com -www
 site:example.com filetype:<ext>
 site:example.com intitle:"SECRET"
+
+--no-download

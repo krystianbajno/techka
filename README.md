@@ -210,6 +210,7 @@ add techka search query - multiple search engines and save title and urls to fil
 --no-download
 
 dork module
+// # after all just allow for dork enter. print cool dorks below
 site:example.com
 site:example.com -www
 site:example.com filetype:<ext>
@@ -221,7 +222,7 @@ site:example.com
 site:example.com
 site:example.com - open redirect dork
 
-dork collect --custom-dork / --query # custom query
+dork collect  --query # custom query
 dork process (data collected from google process for emails and phone numbers)
 dork collect --download # only after dork collect was run as it downloads from list
 

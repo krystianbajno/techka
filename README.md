@@ -219,3 +219,8 @@ site:example.com filetype:<ext>
 site:example.com intitle:"SECRET"
 
 --no-download
+
+links collect
+links process
+
+directory process

@@ -210,3 +210,4 @@ integrate sastcannon
 integrate eventhorizon
 integrate subduer
 add breachradar query
+add sweep disk sensitive data implant

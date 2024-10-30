@@ -221,7 +221,7 @@ site:example.com
 site:example.com
 site:example.com - open redirect dork
 
-dork collect --custom-dork
+dork collect --custom-dork / --query # custom query
 dork process (data collected from google process for emails and phone numbers)
 dork collect --download # only after dork collect was run as it downloads from list
 

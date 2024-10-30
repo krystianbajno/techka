@@ -213,7 +213,7 @@ site:example.com
 site:example.com -www
 site:example.com filetype:<ext>
 site:example.com intitle:"SECRET"
-site:example.com "@example.com" - description
+site:example.com "@example.com" - save description, phone numbers possible
 
 --no-download
 

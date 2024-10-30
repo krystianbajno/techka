@@ -206,17 +206,14 @@ jsluice for credential detection + rust - website process --vulns, basically sas
 add technology detection save to file on collect --detect
 add nikto --nikto
 add techka search query - multiple search engines and save title and urls to file and stdout, similar to techkagoofil
-integrate sastcannon
-integrate eventhorizon
-integrate subduer
-add breachradar query
-add sweep disk sensitive data implant
+
 
 dork module
 site:example.com
 site:example.com -www
 site:example.com filetype:<ext>
 site:example.com intitle:"SECRET"
+site:example.com "@example.com" - description
 
 --no-download
 
@@ -224,3 +221,5 @@ links collect
 links process
 
 directory process
+
+add sweep disk sensitive data implant

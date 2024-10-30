@@ -209,3 +209,4 @@ add techka search query - multiple search engines and save title and urls to fil
 integrate sastcannon
 integrate eventhorizon
 integrate subduer
+add breachradar query

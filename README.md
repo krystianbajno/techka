@@ -219,8 +219,11 @@ site:example.com "@example.com" - save description, phone numbers possible
 site:example.com indexof?? find cool dorks on exploit db
 site:example.com
 site:example.com
+site:example.com - open redirect dork
 
 dork collect --custom-dork
+dork process (data collected from google process for emails and phone numbers)
+dork collect --download # only after dork collect was run as it downloads from list
 
 links collect
 links process

@@ -3,14 +3,14 @@ import shutil
 
     
 def get_pdfs(filepath):
-    from website_processor import DataProcessor
+    from techka_rust_bindings import DataProcessor
     processor = DataProcessor()
     
     pdf_text = processor.get_pdf_text(filepath)
     return pdf_text
     
 def get_emails(filepath):
-    from website_processor import DataProcessor
+    from techka_rust_bindings import DataProcessor
     processor = DataProcessor()
     
     emails = processor.get_emails_from_file(filepath)
@@ -18,7 +18,7 @@ def get_emails(filepath):
     return emails
 
 def get_keywords(filepath, keywords):
-    from website_processor import DataProcessor
+    from techka_rust_bindings import DataProcessor
     processor = DataProcessor()
     
     keywords_result = processor.find_keywords_in_file(filepath, keywords)

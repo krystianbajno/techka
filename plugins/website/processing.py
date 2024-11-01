@@ -16,14 +16,14 @@ def get_subdomains(ALL_URLS):
         return set(subdomains)
     
 def get_pdfs(DATA_DIR):
-    from website_processor import DataProcessor
+    from techka_rust_bindings import DataProcessor
     processor = DataProcessor()
     
     pdf_texts = processor.get_pdfs(DATA_DIR)
     return pdf_texts
     
 def get_emails(DATA_DIR):
-    from website_processor import DataProcessor
+    from techka_rust_bindings import DataProcessor
     processor = DataProcessor()
     
     with open("data/output/all_urls.txt") as f:
@@ -39,7 +39,7 @@ def get_emails(DATA_DIR):
     return set(emails)
 
 def get_keywords(DATA_DIR, keywords):
-    from website_processor import DataProcessor
+    from techka_rust_bindings import DataProcessor
     processor = DataProcessor()
     
     keywords_result = processor.find_keywords(DATA_DIR, keywords)

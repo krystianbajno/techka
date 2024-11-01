@@ -655,6 +655,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
+name = "techka_rust_bindings"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "lazy_static",
+ "lopdf",
+ "memmap2",
+ "pyo3",
+ "rayon",
+ "regex",
+ "serde",
+ "serde_json",
+ "walkdir",
+]
+
+[[package]]
 name = "time"
 version = "0.3.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -773,22 +789,6 @@ name = "wasm-bindgen-shared"
 version = "0.2.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "65fc09f10666a9f147042251e0dda9c18f166ff7de300607007e96bdebc1068d"
-
-[[package]]
-name = "website_processor"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "lazy_static",
- "lopdf",
- "memmap2",
- "pyo3",
- "rayon",
- "regex",
- "serde",
- "serde_json",
- "walkdir",
-]
 
 [[package]]
 name = "weezl"

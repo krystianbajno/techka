@@ -1,5 +1,5 @@
 [package]
-name = "website_processor"
+name = "techka_rust_bindings"
 version = "0.1.0"
 edition = "2021"
 

@@ -2,8 +2,8 @@ import importlib
 import os
 import importlib.util
 
-def initialize(dependencies):
-    return lambda directories: __load_plugins(directories, dependencies)
+def initialize(directories):
+    return lambda dependencies: __load_plugins(directories, dependencies)
     
 def __load_plugins(directories, dependencies):
     plugins = []

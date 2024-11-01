@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urlparse, urljoin
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
-from techka.website.techkagoofil import TechkaGoofil
+from plugins.website.techkagoofil import TechkaGoofil
 
 OUTPUT_DIR = "data/output"
 ALL_URLS_FILE = os.path.join(OUTPUT_DIR, "all_urls.txt")

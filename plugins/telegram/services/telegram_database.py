@@ -22,7 +22,6 @@ class DatabaseManager:
             )
         ''')
 
-        # Users table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
@@ -33,7 +32,6 @@ class DatabaseManager:
             )
         ''')
 
-        # User-channel association table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_channels (
                 id INTEGER PRIMARY KEY,
@@ -43,7 +41,6 @@ class DatabaseManager:
             )
         ''')
 
-        # Messages table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY,
@@ -55,7 +52,6 @@ class DatabaseManager:
             )
         ''')
 
-        # Attachments table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS attachments (
                 id INTEGER PRIMARY KEY,
@@ -82,13 +78,11 @@ class DatabaseManager:
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
 
-        # Insert user data into the users table if the user does not already exist
         cursor.execute('''
             INSERT OR IGNORE INTO users (user_id, username, first_name, last_name)
             VALUES (:user_id, :username, :first_name, :last_name)
         ''', user_data)
 
-        # Insert channel-user relationship into user_channels
         cursor.execute('''
             INSERT OR IGNORE INTO user_channels (user_id, channel_id)
             VALUES (?, ?)

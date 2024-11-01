@@ -1,15 +1,18 @@
-from techka.website.collect import collect
-from techka.website.processing import clean_data, get_emails, get_keywords, get_pdfs, get_subdomains
+from plugins.plugin_base import Plugin
+from plugins.website.collect import collect
+from plugins.website.processing import clean_data, get_emails, get_keywords, get_pdfs, get_subdomains
 
 DATA_DIR = "data/output"
 ALL_URLS_FILE = "data/output/all_urls.txt"
 
-class WebsiteHandler:
+class Handler(Plugin):
+    def register_as(self):
+        return "website"
+    
     def init_commands(self, subparsers):
         website_parser = subparsers.add_parser("website", help="Website-related commands")
         website_subparsers = website_parser.add_subparsers(dest="action", required=True)
 
-        # Collect command
         collect_parser = website_subparsers.add_parser("collect", help="Collect data from a website")
         collect_parser.add_argument("url", type=str, help="Target URL")
         collect_parser.add_argument("--slow-download", action="store_true", help="Enable slower download", required=False)
@@ -19,16 +22,16 @@ class WebsiteHandler:
         collect_parser.add_argument("--techkagoofil", action="store_true", help="Passively find documents using dorks and public search engines", required=False)
         collect_parser.add_argument("--scrap", action="store_true", help="Clone website and save", required=False)
 
-        # Clean command
         website_subparsers.add_parser("clean", help="Remove all collected data")
 
-        # Process command
         process_parser = website_subparsers.add_parser("process", help="Process collected data")
         process_parser.add_argument("--subdomains", action="store_true", help="Extract subdomains")
         process_parser.add_argument("--emails", action="store_true", help="Extract emails from collected data")
         process_parser.add_argument("--pdfs", action="store_true", help="Extract text from PDFs")
         process_parser.add_argument("--keywords", nargs="+", help="Search for specific keywords in collected data")
-
+        
+        return "website"
+    
     def handle(self, args):
         action_map = {
             "collect": self._handle_collect,

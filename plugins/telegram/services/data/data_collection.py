@@ -4,16 +4,16 @@ import sqlite3
 import time
 from telethon import TelegramClient
 from telethon.tl.functions.channels import GetParticipantsRequest
-from telethon.tl.types import ChannelParticipantsSearch, PeerChannel, MessageMediaPhoto, MessageMediaDocument, PeerUser, MessageMediaPoll, MessageMediaWebPage
+from telethon.tl.types import ChannelParticipantsSearch, PeerChannel, MessageMediaDocument, PeerUser
 from telethon.tl.functions.messages import GetHistoryRequest
-from telethon.errors.rpcerrorlist import ChannelPrivateError, ChatAdminRequiredError, RPCError, MessageNotModifiedError
+from telethon.errors.rpcerrorlist import ChannelPrivateError, ChatAdminRequiredError, RPCError
 from telethon.tl.types import Channel, Chat
-from techka.telegram.telegram_database import DatabaseManager
+from plugins.telegram.services.telegram_database import DatabaseManager
 from telethon.tl.types import (
-    MessageMediaDocument, MessageMediaPhoto, Document, Photo, 
-    DocumentAttributeFilename, PeerUser
+    MessageMediaDocument,
+    DocumentAttributeFilename,
+    PeerUser
 )
-from tqdm import tqdm  # Use tqdm for a clean progress bar
 
 class DataCollector:
     def __init__(self, client, db_manager):
@@ -58,7 +58,7 @@ class DataCollector:
             return participants.total  # Member count
         except Exception as e:
             print(f"Error retrieving member count for {entity.title}: {e}")
-            return 0  # Default if count retrieval fails
+            return 0
 
     def collect_all_users(self):
         """Collect all users across all channels and save them in the database."""
@@ -81,7 +81,6 @@ class DataCollector:
             active_users = set()
 
             for message in self.client.iter_messages(entity):
-                # Check if sender is a user and extract user_id safely
                 if isinstance(message.from_id, PeerUser):
                     user_id = message.from_id.user_id
                     active_users.add(user_id)
@@ -114,7 +113,6 @@ class DataCollector:
             offset = 0
             limit = 100  # Telegram API limit
 
-            # Loop through participants with pagination
             while True:
                 participants = self.client(GetParticipantsRequest(
                     entity,
@@ -125,12 +123,11 @@ class DataCollector:
                 ))
 
                 if not participants.users:
-                    break  # Exit loop if no more users
+                    break
 
                 all_participants.extend(participants.users)
                 offset += len(participants.users)
 
-                # Save each user in the database
                 for participant in participants.users:
                     user_data = {
                         'user_id': participant.id,
@@ -169,10 +166,10 @@ class DataCollector:
 
     def collect_messages_in_channel(self, channel_identifier):
         """Collect all messages from a specific channel or group, using either name or ID."""
-        # Determine if the identifier is an ID or a name
+
         channel_identifier = int(channel_identifier)
         entity = PeerChannel(channel_identifier)
-        channel_id = channel_identifier  # Directly use the identifier as channel_id
+        channel_id = channel_identifier
 
 
         offset_id, limit = 0, 100
@@ -277,16 +274,14 @@ class DataCollector:
             print(f"No document found in message ID {message.id}")
             return
 
-        # Extract file name and define the file path
         file_name = self._get_file_name(document)
         file_path = os.path.join('attachments/', file_name)
 
-        # Check if the attachment already exists
         cursor.execute('SELECT 1 FROM attachments WHERE message_id = ? AND file_name = ?', (message.id, file_name))
         if cursor.fetchone():
             print(f"Skipping duplicate attachment for message ID {message.id} with file name {file_name}")
             conn.close()
-            return  # Skip the download if it exists
+            return
 
         print(f"Starting download for message ID {message.id} with file name {file_name}")
         attempt = 0
@@ -296,10 +291,9 @@ class DataCollector:
                 with open(file_path, 'wb') as file:
                     buffer = BytesIO()
                     self.client.download_media(document, file=buffer)
-                    buffer.seek(0)  # Reset buffer position for reading
+                    buffer.seek(0)
                     file.write(buffer.read())
 
-                # Extract metadata and save details to the database
                 mime_type = document.mime_type or "application/octet-stream"
                 file_size = document.size
                 cursor.execute('''
@@ -309,7 +303,7 @@ class DataCollector:
                 print(f"Successfully downloaded and saved {mime_type} for message ID {message.id} at {file_path}")
 
                 conn.commit()
-                break  # Exit retry loop on successful download
+                break
 
             except TimeoutError:
                 attempt += 1
@@ -327,4 +321,4 @@ class DataCollector:
         for attr in document.attributes:
             if isinstance(attr, DocumentAttributeFilename):
                 return attr.file_name
-        return f"{document.id}.dat"  # Default to document ID if no file name
+        return f"{document.id}.dat"

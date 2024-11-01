@@ -2,13 +2,13 @@ import os
 import sqlite3
 import shutil
 import networkx as nx
-from techka.telegram.telegram_client import TelegramClientManager
-from techka.telegram.telegram_database import DatabaseManager
-from techka.telegram.data_collection import DataCollector
-from techka.telegram.data_display import DataDisplay
-from techka.telegram.data_processing import DataProcessor
-from techka.telegram.intelligence_analysis import IntelligenceAnalysis
-from techka.telegram.search_and_storage import DataIndexer
+from plugins.telegram.services.telegram_client import TelegramClientManager
+from plugins.telegram.services.telegram_database import DatabaseManager
+from plugins.telegram.services.data.data_collection import DataCollector
+from plugins.telegram.services.data.data_display import DataDisplay
+from plugins.telegram.services.data.data_processing import DataProcessor
+from plugins.telegram.services.intelligence_analysis import IntelligenceAnalysis
+from plugins.telegram.services.search_and_storage import DataIndexer
 
 class TelegramService:
     ATTACHMENTS_DIR = "data/attachments"
@@ -19,7 +19,6 @@ class TelegramService:
         self.client = self.client_manager.get_client()
         self.db_manager = DatabaseManager()
 
-        # Initialize modules
         self.data_collector = DataCollector(self.client, self.db_manager)
         self.data_display = DataDisplay(self.db_manager)
         self.data_processor = DataProcessor(self.db_manager)

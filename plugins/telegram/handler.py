@@ -1,8 +1,13 @@
-from techka.telegram.telegram_service import TelegramService
+from plugins.plugin_base import Plugin
+from plugins.telegram.services.telegram_service import TelegramService
+from techka.providers.service_provider import ServiceProvider
 
-class TelegramHandler:
-    def __init__(self, auth_service):
-        self.telegram_service = TelegramService(auth_service)
+class Handler(Plugin):
+    def __init__(self, service_provider: ServiceProvider):
+        self.telegram_service = TelegramService(service_provider.get_auth_service())
+        
+    def register_as(self):
+        return "telegram"
 
     def init_commands(self, subparsers):
         telegram_parser = subparsers.add_parser("telegram", help="Telegram related commands")
@@ -45,6 +50,8 @@ class TelegramHandler:
         telegram_search_parser = telegram_subparsers.add_parser("search", help="Search through collected Telegram data")
         telegram_search_parser.add_argument("query", type=str, help="Search query for messages, users, channels, or attachments")
 
+        return "telegram"
+    
     def handle(self, args):
         action_map = {
             "collect": self._collect,

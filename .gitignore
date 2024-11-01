@@ -7,3 +7,4 @@ techka/rust_bindings/target/
 *.session-journal
 attachments/
 .usage.dat
+plugins/secret

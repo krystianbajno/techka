@@ -6,18 +6,14 @@ class TelegramClientManager:
         self.auth_service = auth_service
         self.client = None
         
-        # Retrieve or create identity
         self.identity = self._get_identity()
 
-        # Retrieve API credentials after identity is initialized
         self.api_id, self.api_hash = self._get_api_credentials(self.identity)
         
-        # Ensure phone number is set in identity
         self.phone_number = self.identity.get('phone_number')
         if not self.phone_number:
             raise ValueError("Phone number not found in identity. Cannot proceed.")
         
-        # Initialize the client
         self._initialize_client()
 
     def _get_identity(self):
@@ -25,24 +21,20 @@ class TelegramClientManager:
         identity = self.auth_service.get_any_identity_for('Telegram')
         if not identity:
             print("No existing identity found; creating a new one.")
-            # Directly set up the identity without relying on self.identity here
             identity = self.login_and_store_identity(api_id=None, api_hash=None)
         return identity
 
     def _get_api_credentials(self, identity):
         """Fetch or prompt for API credentials and update identity if necessary."""
-        # Access cookies from the provided identity
         cookies = identity.get('cookies', {})
         api_id = cookies.get('api_id')
         api_hash = cookies.get('api_hash')
 
-        # Prompt for credentials if missing
         if not api_id or not api_hash:
             print("API credentials not found. Please enter them.")
             api_id = input("Enter your Telegram API ID: ")
             api_hash = input("Enter your Telegram API Hash: ")
 
-            # Update identity with the new credentials
             self.auth_service.update_identity(
                 'Telegram',
                 identity.get('identity_name'),
@@ -57,10 +49,8 @@ class TelegramClientManager:
         session_file = self.identity.get('session_file', f"telegram_session_{self.phone_number}")
         self.client = TelegramClient(session_file, self.api_id, self.api_hash)
         
-        # Attempt to connect and authorize the client
         self.client.connect()
         if not self.client.is_user_authorized():
-            # Pass api_id and api_hash explicitly to avoid relying on uninitialized attributes
             self.login_and_store_identity(api_id=self.api_id, api_hash=self.api_hash)
 
     def login_and_store_identity(self, api_id=None, api_hash=None):

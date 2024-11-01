@@ -1,2 +1,0 @@
-# download chat fully
-# login

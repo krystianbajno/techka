@@ -48,8 +48,6 @@ class Handler(Plugin):
         # Search Command
         telegram_search_parser = telegram_subparsers.add_parser("search", help="Search through collected Telegram data")
         telegram_search_parser.add_argument("query", type=str, help="Search query for messages, users, channels, or attachments")
-
-        return "telegram"
     
     def handle(self, args):
         action_map = {

@@ -33,7 +33,7 @@ class Plugin(ABC):
     def commands(self, subparsers):
         """
           Implement subparsers.add_parser here
-          parser = subparsers.add_parser(self.REGISTERED_AS, help="Sample plugin command")
+          parser = subparsers.add_parser(self.registered_as, help="Sample plugin command")
           parser.add_argument("--example", type=str, help="Example argument")
         """
         raise NotImplementedError

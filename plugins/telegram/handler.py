@@ -1,16 +1,15 @@
 from plugins.plugin_base import Plugin
 from plugins.telegram.services.telegram_service import TelegramService
-from core.providers.service_provider import ServiceProvider
 
 class Handler(Plugin):
-    def __init__(self, service_provider: ServiceProvider):
-        self.telegram_service = TelegramService(service_provider.get_auth_service())
+    def initialize(self):
+        self.telegram_service = TelegramService(self.service_provider.get_auth_service())
         
     def register_as(self):
         return "telegram"
 
-    def init_commands(self, subparsers):
-        telegram_parser = subparsers.add_parser("telegram", help="Telegram related commands")
+    def commands(self, subparsers):
+        telegram_parser = subparsers.add_parser(self.registered_as, help="Telegram related commands")
         telegram_subparsers = telegram_parser.add_subparsers(dest="action", required=True)
         
         # Collect Command
@@ -60,7 +59,9 @@ class Handler(Plugin):
             "export": self._export,
             "search": self._search,
         }
+        
         action = args.action
+        
         if action in action_map:
             action_map[action](args)
 

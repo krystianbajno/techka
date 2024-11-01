@@ -15,7 +15,7 @@ def get_emails(filepath):
     
     emails = processor.get_emails_from_file(filepath)
 
-    return emails
+    return set(emails)
 
 def get_keywords(filepath, keywords):
     from techka_rust_bindings import DataProcessor

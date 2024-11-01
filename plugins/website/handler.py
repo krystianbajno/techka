@@ -9,8 +9,8 @@ class Handler(Plugin):
     def register_as(self):
         return "website"
     
-    def init_commands(self, subparsers):
-        website_parser = subparsers.add_parser("website", help="Website-related commands")
+    def commands(self, subparsers):
+        website_parser = subparsers.add_parser(self.registered_as, help="Website-related commands")
         website_subparsers = website_parser.add_subparsers(dest="action", required=True)
 
         collect_parser = website_subparsers.add_parser("collect", help="Collect data from a website")

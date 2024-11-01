@@ -4,8 +4,11 @@ from plugins.file.processing import get_emails, get_keywords, get_pdfs
 from plugins.plugin_base import Plugin
 
 class Handler(Plugin):
-    def init_commands(self, subparsers):
-        file_parser = subparsers.add_parser("file", help="File related commands")
+    def register_as(self):
+        return "file"
+    
+    def commands(self, subparsers):
+        file_parser = subparsers.add_parser(self.registered_as, help="File related commands")
         file_subparsers = file_parser.add_subparsers(dest="action", required=True)
 
         file_process_parser = file_subparsers.add_parser("process", help="Process a file")
@@ -14,14 +17,13 @@ class Handler(Plugin):
         file_process_parser.add_argument("--pdfs", action="store_true", help="Extract and print text from PDFs and documents")
         file_process_parser.add_argument("--keywords", nargs="+", help="List of keywords to search for (includes PDFs)")
 
-    def register_as(self):
-        return "file"
-        
     def handle(self, args):
         action_map = {
             "process": self._file_process,
         }
+        
         action = args.action
+        
         if action in action_map:
             action_map[action](args)
 

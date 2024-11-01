@@ -1,4 +1,4 @@
-from techka.auth.auth_service import AuthService
+from core.auth.auth_service import AuthService
 
 class ServiceProvider:
     def __init__(self):

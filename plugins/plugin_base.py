@@ -1,5 +1,5 @@
 from abc import ABC
-from techka.providers.service_provider import ServiceProvider
+from core.providers.service_provider import ServiceProvider
 
 class Plugin(ABC):
     def __init__(self, service_provider: ServiceProvider):

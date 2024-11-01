@@ -1,6 +1,6 @@
 from plugins.plugin_base import Plugin
 from plugins.telegram.services.telegram_service import TelegramService
-from techka.providers.service_provider import ServiceProvider
+from core.providers.service_provider import ServiceProvider
 
 class Handler(Plugin):
     def __init__(self, service_provider: ServiceProvider):

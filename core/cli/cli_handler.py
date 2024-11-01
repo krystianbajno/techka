@@ -2,12 +2,11 @@ import argparse
 import importlib
 import os
 import sys
-from techka.auth.auth_service import AuthService
-from techka.cli.last_usage import check_last_usage
-from techka.cli.logo import logo
+from core.cli.last_usage import check_last_usage
+from core.cli.logo import logo
 import importlib.util
 
-from techka.providers.service_provider import ServiceProvider
+from core.providers.service_provider import ServiceProvider
 
 
 class CliHandler:
@@ -26,7 +25,7 @@ class CliHandler:
         
         self.command_map = {}
         
-        self.plugins = self.load_plugins(['plugins'])
+        self.plugins = self.load_plugins(['plugins', 'plugins/techka-secret'])
         
         for plugin in self.plugins:
             plugin_command = plugin.initialize_commands(self.subparsers)

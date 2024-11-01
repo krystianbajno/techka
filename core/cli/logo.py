@@ -1,9 +1,9 @@
 from datetime import date
 import random
-from techka.cli.colors import *
+from core.cli.colors import *
 
-from techka.cli.images import IMAGES
-from techka.cli.texts import TEXTS
+from core.cli.images import IMAGES
+from core.cli.texts import TEXTS
 
 def logo():
     current_date = date.today()

@@ -29,9 +29,7 @@ class Handler(Plugin):
         process_parser.add_argument("--emails", action="store_true", help="Extract emails from collected data")
         process_parser.add_argument("--pdfs", action="store_true", help="Extract text from PDFs")
         process_parser.add_argument("--keywords", nargs="+", help="Search for specific keywords in collected data")
-        
-        return "website"
-    
+            
     def handle(self, args):
         action_map = {
             "collect": self._handle_collect,

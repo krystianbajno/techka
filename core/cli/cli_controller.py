@@ -4,12 +4,8 @@ from core.cli.help import print_full_help
 from core.cli.last_usage import check_last_usage
 from core.cli.logo import logo
 
-from core.plugins.plugin_handler import initialize as initialize_plugins
-from core.providers.service_provider import ServiceProvider
-
-
 class CliController:
-    def __init__(self):
+    def __init__(self, plugins):
         self.parser = argparse.ArgumentParser(
             description="SOCMINT C4ISR - surveillance and reconnaissance."
         )
@@ -22,11 +18,7 @@ class CliController:
         
         self.command_map = {}
         
-        self.plugins = initialize_plugins({
-            "service_provider": ServiceProvider()
-        })(['plugins', 'plugins/techka-secret'])
-        
-        for plugin in self.plugins:
+        for plugin in plugins:
             plugin.register_commands(self.subparsers)
             plugin_command = plugin.registered_as
             self.command_map[plugin_command] = plugin.handle

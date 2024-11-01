@@ -8,7 +8,7 @@ from core.plugins.plugin_handler import initialize as initialize_plugins
 from core.providers.service_provider import ServiceProvider
 
 
-class CliHandler:
+class CliController:
     def __init__(self):
         self.parser = argparse.ArgumentParser(
             description="SOCMINT C4ISR - surveillance and reconnaissance."

@@ -8,3 +8,4 @@ tqdm
 cryptg
 youtube-transcript-api
 yt-dlp
+PyGithub

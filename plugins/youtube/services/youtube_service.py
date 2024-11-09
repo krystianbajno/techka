@@ -30,12 +30,33 @@ def download_video(video_url, output_path="."):
     except Exception as e:
         print(f"Could not download video: {e}")
 
+def download_audio(video_url, output_path=".", audio_format="mp3"):
+    try:
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': audio_format,
+                'preferredquality': '192',
+            }],
+            'postprocessor_args': [
+                '-ar', '16000'
+            ],
+            'prefer_ffmpeg': True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([video_url])
+        print(f"Audio downloaded successfully: {video_url}")
+    except Exception as e:
+        print(f"Could not download audio: {e}")
+
 def download_youtube_content(url, output_path="."):
     video_id = extract_video_id(url)
     if not video_id:
         print("Invalid URL. Please provide a valid YouTube video URL.")
         return
-    
+
     print("Downloading transcript...")
     download_transcript(video_id, output_path=output_path)
     print("Downloading video...")
@@ -45,12 +66,12 @@ def download_channel_content(channel_url, output_path="."):
     try:
         if not os.path.exists(output_path):
             os.makedirs(output_path)
-        
+
         ydl_opts = {
             'extract_flat': 'yes',
             'skip_download': True,
         }
-        
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(channel_url, download=False)
             video_urls = [entry['url'] for entry in info['entries']]

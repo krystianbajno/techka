@@ -8,3 +8,4 @@ techka/rust_bindings/target/
 attachments/
 .usage.dat
 plugins/secret
+data/dorking_output/

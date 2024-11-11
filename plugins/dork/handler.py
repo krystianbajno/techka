@@ -1,12 +1,13 @@
 import os
 from plugins.plugin_base import Plugin
 from plugins.dork.services.dorking import Dorking
-from plugins.dork.processing import get_all_emails
+from plugins.dork.processing import get_all_emails, extract_files_from_links
 from plugins.website.processing import clean_data, get_keywords
 
 DATA_DIR = "data/dorking_output/"
-LINKS_FILE = "data/dorking_output/collected_links.txt"
+LINKS_FILE = "data/dorking_output/collected_links.json"
 DORKS_FILE = "plugins/dork/cool_dorks.txt"
+FILE_EXTENSIONS = ["pdf", "jpeg", "webp", "dat", "sql", "webm", "bin", "docx", "doc", "pptx", "xlsx", "jpg", "png", "txt", "bak", "backup", "xls", "csv", "md", "cpp", "py"]
 
 class Handler(Plugin):
     def register_as(self):
@@ -29,6 +30,7 @@ class Handler(Plugin):
         process_parser = dorking_subparsers.add_parser("process", help="Process collected data")
         process_parser.add_argument("--emails", action="store_true", help="Extract emails from collected data")
         process_parser.add_argument("--keywords", nargs="+", help="Search for specific keywords in collected data")
+        process_parser.add_argument("--files", action="store_true", help="Extract files from collected links based on extensions")
 
     def handle(self, args):
         action_map = {
@@ -43,6 +45,9 @@ class Handler(Plugin):
             self.print_cool_dorks()
 
     def _handle_collect(self, args):
+        if not os.path.exists(DATA_DIR):
+            os.makedirs(DATA_DIR)
+            
         dorker = Dorking(
             output_dir=DATA_DIR, 
             max_pages=args.max_pages, 
@@ -66,6 +71,11 @@ class Handler(Plugin):
         if args.keywords:
             keywords = get_keywords(DATA_DIR, args.keywords)
             print(keywords)
+
+        if args.files:
+            files = extract_files_from_links(LINKS_FILE)
+            for file_url in files:
+                print(file_url)
 
     def print_cool_dorks(self):
         if os.path.exists(DORKS_FILE):

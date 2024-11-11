@@ -1,0 +1,250 @@
+
+# Email
+filetype:txt @gmail.com OR @yahoo.com OR @hotmail.com OR @aol.com
+filetype:xls inurl:"email.xls"
+site:example.com "@example.com"
+
+# Login 
+intitle:login
+intitle:login inurl:/admin
+intitle:login inurl:/login
+inurl:login
+inurl:"/admin/login.php"
+site:preprod.* * inurl:login
+
+# Movies 
+intitle:"index.of" (mp4|avi|mkv) "[movie name]" -html -htm -php -asp -jsp
+[movie name] site:drive.google.com intitle:wmv|mpg|avi|mp4|mkv|mov
+inurl:mkv+[movie name]
+inurl:mp4+[movie name]
+
+# Network Devices 
+intext:"printer meter"
+intitle:”Brother” intext:”View Configuration”
+intitle:"Device name" inurl:home.htm
+intitle:”Network Print Server” filetype:html
+intitle:”HP LaserJet” inurl:SSI/index.htm
+intitle:"open network devices"
+
+# IoT
+intitle:"Amazon Echo" "setup"
+intitle:"Baby Monitor" inurl:"/live"
+intitle:"Doorbell Camera" inurl:"/setup"
+intitle:"Google Home" "setup"
+intitle:"Router Login" inurl:/login
+intitle:"Smart Lighting Control Panel"
+intitle:"Sonos - Google Chrome"
+intitle:"Thermostat" inurl:"/status"
+intitle:"Smart TV" inurl:/cgi-bin/login
+intext:"SMART TV" inurl:password.txt
+inurl:"description.xml" "Philips hue bridge"
+inurl:"/smartlock" intitle:"Login"
+
+# Google Drive
+site:drive.google.com confidential
+
+# Various
+site:example.com
+site:example.com -www
+site:example.com filetype:<ext>
+site:example.com intitle:"SECRET"
+site:example.com -inurl:www
+site:example.com filetype:pdf
+filetype:pdf intitle:"Confidental"
+filetype:doc intitle:"Confidental"
+filetype:xls intitle:"Confidental"
+filetype:ppt intitle:"Confidental"
+site:example.com inurl:admin
+site:example.com inurl:login
+site:example.com inurl:register
+site:example.com inurl:dashboard
+site:example.com inurl:"phpinfo.php"
+site:example.com inurl:config
+site:example.com inurl:"/backup/"
+
+# Cameras
+intitle:"D-Link" inurl:"/video.htm"
+intitle:"Linksys Viewer - Login" -inurl:mainFrame
+intitle:"Live View /-AXIS"
+intitle:"netcam watcher"
+intitle:"Network Camera NetworkCamera"
+intitle:"TP-LINK IP-Camera"
+intitle:"Webcam" inurl:WebCam.htm
+intitle:"webcamXP 5"
+intitle:webcamxp inurl:8080
+inurl:"axis-cgi/mjpg"
+inurl:"control/userimage.html"
+inurl:"/image/webcam.jpg"
+inurl:"/live/cam.html"
+inurl:"main.cgi?next_file=main_fs.htm"
+inurl:"/mjpg/video.mjpg"
+inurl:"MultiCameraFrame?Mode=Motion"
+inurl:"/out.jpg"
+inurl:"snapshot.cgi?user="
+inurl:top.htm inurl:currenttime
+inurl:"view/index.shtml"
+inurl:"view/indexFrame.shtml"
+inurl:"view/viewer_index.shtml"
+inurl:"viewerframe?mode=motion"
+inurl:"webcam.html"
+
+# Control panels
+intitle:"Admin Login"
+intitle:"Control Panel" inurl:/admin
+intitle:"Control Panel" inurl:/login
+
+# Directories
+intitle:"Browse Directory"
+intitle:index.of
+intitle:"index of" database.properties
+intitle:"Index of" inurl:/parent-directory
+intitle:"Index of" inurl:/admin
+intitle:"Index of" inurl:/backup
+intitle:"Index of" inurl:/config
+intitle:"Index of" inurl:/logs
+
+# Open redirect
+site:www.openbugbounty.org  + intext:"Open Redirect" + intext:"Unpatched"
+
+/{payload}
+?next={payload}
+?url={payload}
+?target={payload}
+?rurl={payload}
+?dest={payload}
+?destination={payload}
+?redir={payload}
+?redirect_uri={payload}
+?redirect_url={payload}
+?redirectUri={payload}
+?redirectUrl={payload}
+?redirect={payload}
+/redirect/{payload}
+/cgi-bin/redirect.cgi?{payload}
+/out/{payload}
+/out?{payload}
+?view={payload}
+/login?to={payload}
+?image_url={payload}
+?go={payload}
+?return={payload}
+?returnTo={payload}
+?return_to={payload}
+?checkoutUrl={payload}
+?checkout_url={payload}
+?continue={payload}
+?return_path={payload}
+?returnPath={payload}
+
+# Foothold
+ext:nix "BEGIN OPENSSH PRIVATE KEY"
+site:github.com "BEGIN OPENSSH PRIVATE KEY"
+inurl:home.htm intitle:1766
+intext:"proftpd.conf" "index of"
+Google Dork Submisson For GlobalProtect Portal
+intext:"siemens" & inurl:"/portal/portal.mwsl"
+intitle:"SSL Network Extender Login" -checkpoint.com
+intext:"aws_access_key_id" | intext:"aws_secret_access_key" filetype:json | filetype:yaml
+intitle:index of /etc/ssh
+site:.edu filetype:xls "root" database
+inurl:"cgi-bin/koha"
+"Header for logs at time" ext:log
+"START test_database" ext:log
+intitle:"GlobalProtect Portal"
+intitle:"index of" setting.php
+intitle:index of /etc/openldap
+intitle:"/zircote/swagger-php"
+intext:"dhcpd.conf" "index of"
+"PHP Fatal error:" ext:log OR ext:txt
+site:uat.* * inurl:login
+site:preprod.* * inurl:login
+intitle:Index of "/etc/network" | "/etc/cni/net.d"
+"configmap.yaml" | "config.yaml" | "*-config.yaml" intitle:"index of"
+inurl:/s3.amazonaws.com ext:xml intext:index of -site:github.com
+"rbac.yaml" | "role.yaml" | "rolebinding.yaml" | "*-rbac.yaml" intitle:"index of"
+inurl:pastebin intitle:mastercard
+intitle:"FileCatalyst file transfer solution"
+allintitle:"ITRS OP5 Monitor"
+intitle: index of /concrete/Password
+inurl:"wa.exe?TICKET"
+site:com inurl:invoice
+Google Dorks for Default XAMPP Dashboards
+intitle:"Index of /confidential"
+inurl:"/wp-json/oembed/1.0/embed?url="
+"PMB" AND ("changelog.txt" OR inurl:opac_css)
+inurl:* "auditing.txt"
+intext:"index of" web
+intitle:"index of" cgi.pl
+inurl:* "encryption.txt"
+allintitle:"Bright Cluster Manager" site:.edu
+intitle:"index of" env.cgi
+intitle:"Welcome to iTop version" wizard
+"Started by upstream project" ext:txt
+intitle:"Installation Wizard - PowerCMS v2"
+ext:java intext:"executeUpdate"
+intitle:"OpenVpn Status Monitor"
+intitle:"index of" database.properties
+inurl:install.php intitle:"Froxlor Server Management Panel - Installation"
+(site:jsonformatter.org | site:codebeautify.org) & (intext:aws | intext:bucket | intext:password | intext:secret | intext:username)
+filetype:reg reg HKEY_CURRENT_USER SSHHOSTKEYS
+intitle:"Fleet Management Portal"
+inurl:"?url=http"
+site:.com "index of docker"
+intext:"user" filetype:php intext:"account" inurl:/admin
+intext:"userfiles" intitle:"Index Of" site:*.com.*
+intitle:"Index of" intext:"php" site:*.com.*
+intitle:"Index of" intext:"config" site:*.com.*
+intitle:index of db.py
+intext:"index of" app
+site:id filetype:sql
+allintitle:"ASPECT Control Panel"
+allintitle:"CAT12CE - WebInterface"
+allintitle:"code-server login"
+inurl:"UserLogin/" intitle:"Panel"
+intext:"administrator" filetype:txt intext:"account" inurl:/admin , intext:"administrator" filetype:txt intext:"account" allinurl:
+intitle:"phpinfo" site:*.com.* intext:"HTTP_HOST"
+intext:"index of"store
+inurl:/HappyAxis.jsp
+intext:"index of" server.conf
+site:*.* inurl:php_error.log - Sensitive information disclosure
+site:*.*.* intitle:"index of" *.pcapng
+intitle:"index of" "configuration.php"
+site:*.edu.* filetype:template
+site:*.ac.* filetype:template
+inurl:."install.appcenter.ms/orgs/"
+site:.edu intext:"robotics" inurl:/research
+inurl:typo3/index.php
+filetype:log intext:"Account Number"
+intitle:"WAMPSERVER Homepage"
+intitle:index.of /logs.txt
+inurl: /adminer.php
+intext:"index of" "pins" site:*.com
+site:*.com */admin.txt
+site:s3.amazonaws.com "index of /"
+intext:"Reportico" site:.com OR site:.org OR site:.net OR site:.gov OR site:.edu
+site:*.ac.* intitle:"index of" *.ics
+filetype:txt CLAVE*.txt OR clave*.txt
+site:*.edu.* intitle:"index of" *.ics
+inurl:"/wp-includes/user.php" -site:wordpress.org -site:github.com -site:fossies.org
+inurl:"/wp-content/debug.log"
+allinurl:"add_vhost.php?lang=english"
+inurl:signup | inurl:sign-up | inurl:register | inurl:registration
+intitle:"index of" inurl:/config/
+site:*.edu.* inurl:globalprotect
+intitle:"index of" "wp-config.php.old" | "wp-config.php.backup"
+intitle:"index of"Eventlog Analyzer
+site:admin.*.* inurl:login
+intitle:"index of" private
+inurl:pastebin "VISA"
+site:prod.*.* inurl:login
+intitle:"index of " *.js"
+site:login.*.* site:portal.*.*
+inurl:adminpanel site:*.* -site:github.com
+site:login.*.* | site:portal.*.*
+intitle:"index of" "config.php.txt"
+inurl: edu + site: admin
+intext:"index of" "infophp()"
+intitle:"index of" "secret.txt"
+site:.com inurl:login | inurl:logon | inurl:sign-in | inurl:signin | inurl:portal
+inurl:"/database.json"
+intitle:"Webcam" inurl:WebCam.htm

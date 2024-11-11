@@ -1,4 +1,7 @@
 
+# Job Postings Contain Juicy Info
+# LinkedIn
+
 # Email
 filetype:txt @gmail.com OR @yahoo.com OR @hotmail.com OR @aol.com
 filetype:xls inurl:"email.xls"

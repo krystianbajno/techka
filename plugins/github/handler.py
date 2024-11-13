@@ -1,4 +1,5 @@
 import json
+import csv
 from plugins.plugin_base import Plugin
 from plugins.github.services.github_service import (
     authenticate_github,
@@ -52,8 +53,7 @@ class Handler(Plugin):
         aggregate_parser.add_argument("--download", action="store_true", help="Flag to download all repositories with all branches")
 
     def handle(self, args):
-        # Public data fetch, so no authentication unless requested
-        github = authenticate_github()  # Pass an empty or None token for public access
+        github = authenticate_github()  # Public data fetch without authentication unless token provided
 
         action_map = {
             "all_stars": lambda: self._handle_all_stars(github, args),
@@ -70,34 +70,33 @@ class Handler(Plugin):
         if args.action in action_map:
             action_map[args.action]()
 
-    # Individual handlers for OSINT tasks
     def _handle_all_stars(self, github, args):
         data = get_all_stars(github, args.username)
-        self._save_json(data, f"{args.username}_all_stars.json")
+        self._save_data(data, f"{args.username}_all_stars")
 
     def _handle_all_repo_stars_and_forks(self, github, args):
         data = get_all_repo_stars_and_forks(github, args.username)
-        self._save_json(data, f"{args.username}_all_repo_stars_and_forks.json")
+        self._save_data(data, f"{args.username}_all_repo_stars_and_forks")
 
     def _handle_all_repo_branches_and_clone(self, github, args):
         data = get_all_repo_branches_and_clone(github, args.username, args.clone_path)
-        self._save_json(data, f"{args.username}_all_repo_branches.json")
+        self._save_data(data, f"{args.username}_all_repo_branches")
 
     def _handle_all_followers(self, github, args):
         data = get_all_followers(github, args.username)
-        self._save_json(data, f"{args.username}_all_followers.json")
+        self._save_data(data, f"{args.username}_all_followers")
 
     def _handle_all_following(self, github, args):
         data = get_all_following(github, args.username)
-        self._save_json(data, f"{args.username}_all_following.json")
+        self._save_data(data, f"{args.username}_all_following")
 
     def _handle_all_commits_history(self, github, args):
         data = get_all_commits_history(github, args.username)
-        self._save_json(data, f"{args.username}_all_commits_history.json")
+        self._save_data(data, f"{args.username}_all_commits_history")
 
     def _handle_all_activity(self, github, args):
         data = get_all_activity(github, args.username)
-        self._save_json(data, f"{args.username}_all_activity.json")
+        self._save_data(data, f"{args.username}_all_activity")
 
     def _handle_clone_single_repo(self, github, args):
         clone_repo_all_branches(args.repo_url, args.clone_path)
@@ -119,7 +118,18 @@ class Handler(Plugin):
         else:
             print("Skipping repository cloning (use --download to enable).")
 
-    def _save_json(self, data, filename):
-        with open(filename, 'w') as f:
+    def _save_data(self, data, base_filename):
+        json_filename = f"{base_filename}.json"
+        with open(json_filename, 'w') as f:
             json.dump(data, f, indent=4)
-        print(f"Data saved to {filename}")
+        print(f"Data saved to {json_filename}")
+
+        if isinstance(data, list) and data and isinstance(data[0], dict):
+            csv_filename = f"{base_filename}.csv"
+            headers = data[0].keys()
+            with open(csv_filename, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=headers)
+                writer.writeheader()
+                for row in data:
+                    writer.writerow(row)
+            print(f"Data saved to {csv_filename}")

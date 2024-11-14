@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/krystianbajno/techka/badge)](https://www.codefactor.io/repository/github/krystianbajno/techka)
+
 ```
 T E C H K A v4.20.69 - 2024
 

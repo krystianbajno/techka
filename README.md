@@ -8,6 +8,8 @@ T E C H K A draws from the Polish word "teczka", meaning "briefcase," which trad
 
 This is not intelligence gathering. This is [counter deception](https://media.defcon.org/DEF%20CON%2032/DEF%20CON%2032%20presentations/DEF%20CON%2032%20-%20Tom%20Cross%20Greg%20Conti%20-%20Deception%20%26%20Counter%20Deception%20-%20Defending%20Yourself%20in%20a%20World%20Full%20of%20Lies.pdf). 
 
+Direct -> Collect -> Process -> Analyze -> Disseminate -> Feedback -> Repeat
+
 ```
 T E C H K A v4.20.69 - 2024
 
@@ -28,7 +30,6 @@ T E C H K A v4.20.69 - 2024
 ⠀⠀⠀⠀⠀⠀⠀⠀⠚⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
 .45 huh? Incredible.
-"Direct -> Collect -> Process -> Analyze -> Disseminate -> Feedback -> Repeat"
 
 T E C H K A v4.20.69 - 2024
 ```

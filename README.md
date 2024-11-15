@@ -28,6 +28,7 @@ T E C H K A v4.20.69 - 2024
 ⠀⠀⠀⠀⠀⠀⠀⠀⠚⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
 .45 huh? Incredible.
+"Direct -> Collect -> Process -> Analyze -> Disseminate -> Feedback -> Repeat"
 
 T E C H K A v4.20.69 - 2024
 ```

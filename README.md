@@ -46,7 +46,7 @@ git clone https://github.com/krystianbajno/techka-secret
 ```
 
 # Usage
-I wrote this tool for myself and I am not even going to discuss how to use it, but feel free to explore it and use:
+I created this tool for my own use, and I’m not going to explain how it works. However, feel free to explore and use it as you wish.
 ```bash
 python3 techka.py --full-help # display help for every possible module
 ```

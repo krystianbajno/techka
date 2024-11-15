@@ -1,4 +1,5 @@
 import os
+from core.cli.colors import GREEN, RED, RESET, YELLOW
 from plugins.plugin_base import Plugin
 from plugins.dork.services.dorking import Dorking
 from plugins.dork.processing import get_all_emails, extract_files_from_links
@@ -70,7 +71,11 @@ class Handler(Plugin):
 
         if args.keywords:
             keywords = get_keywords(DATA_DIR, args.keywords)
-            print(keywords)
+            for _1, _2, _3 in keywords:
+                colored_match = _3
+                for keyword in args.keywords:
+                    colored_match = colored_match.replace(keyword, f"{RED}{keyword}{RESET}")
+                print(f"[{YELLOW}{_1}{RESET}: {GREEN}{_2}{RESET}] {colored_match}")
 
         if args.files:
             files = extract_files_from_links(LINKS_FILE)

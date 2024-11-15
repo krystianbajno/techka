@@ -21,8 +21,7 @@ def get_keywords(filepath, keywords):
     from techka_rust_bindings import DataProcessor
     processor = DataProcessor()
     
-    keywords_result = processor.find_keywords_in_file(filepath, keywords)
-    return keywords_result
+    return processor.find_keywords_in_file(filepath, keywords)
     
 def clean_data(DATA_DIR):
     if os.path.exists(DATA_DIR):

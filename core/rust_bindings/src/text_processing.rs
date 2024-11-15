@@ -7,13 +7,12 @@ use walkdir::WalkDir;
 use crate::file_io::mmap_file;
 
 pub fn get_all_files(base_dir: &str) -> Vec<PathBuf> {
-    let mut files = Vec::new();
-    for entry in WalkDir::new(base_dir).into_iter().filter_map(|e| e.ok()) {
-        if entry.file_type().is_file() {
-            files.push(entry.path().to_path_buf());
-        }
-    }
-    files
+    WalkDir::new(base_dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|entry| entry.file_type().is_file())
+        .map(|entry| entry.path().to_path_buf())
+        .collect()
 }
 
 pub fn extract_emails_from_files(files: &[PathBuf]) -> Vec<String> {
@@ -27,18 +26,59 @@ pub fn find_keywords_in_files(files: &[PathBuf], keywords: &HashSet<String>) -> 
 }
 
 pub fn extract_text_from_pdfs(files: &[PathBuf]) -> Vec<String> {
-    let mut pdf_texts = Vec::new();
+    files.iter()
+        .filter_map(|file| {
+            file.extension()
+                .and_then(|ext| ext.to_str())
+                .filter(|ext| ext.eq_ignore_ascii_case("pdf"))
+                .and_then(|_| extract_text_from_pdf(file).ok())
+        })
+        .collect()
+}
+pub fn search_detailed_patterns_in_files(
+    files: &[PathBuf],
+    pattern: &Regex,
+    truncate: u32, 
+) -> Vec<(String, usize, String)> {  
+    let mut results = Vec::new();
+
     for file in files {
-        if let Some(extension) = file.extension().and_then(|ext| ext.to_str()) {
-            if extension.eq_ignore_ascii_case("pdf") {
-                match extract_text_from_pdf(file) {
-                    Ok(text) => pdf_texts.push(text),
-                    Err(e) => eprintln!("Error extracting text from PDF {:?}: {}", file, e),
-                }
+        let content = extract_text_from_file(file);
+        if content.is_empty() {
+            continue;
+        }
+
+        for (line_number, line) in content.lines().enumerate() {
+            if let Some(match_found) = pattern.find(line) {
+                let filename = file.file_name().unwrap_or_default().to_string_lossy();
+
+                let start = match_found.start();
+                let end = match_found.end();
+
+                let left_context = if start >= truncate as usize {
+                    &line[start - truncate as usize..start]
+                } else {
+                    &line[0..start]  
+                };
+
+                let right_context = if line.len() > end + truncate as usize {
+                    &line[end..end + truncate as usize]
+                } else {
+                    &line[end..] 
+                };
+
+                let context = format!("{}{}{}", left_context, match_found.as_str(), right_context);
+
+                results.push((
+                    filename.to_string(),
+                    line_number + 1,
+                    context
+                ));
             }
         }
     }
-    pdf_texts
+
+    results
 }
 
 pub fn search_patterns_in_files(files: &[PathBuf], pattern: &Regex) -> Vec<String> {
@@ -76,8 +116,7 @@ pub fn extract_text_from_file(filepath: &PathBuf) -> String {
 }
 
 pub fn extract_text_from_pdf(path: &PathBuf) -> Result<String, Box<dyn Error>> {
-    use lopdf::content::Content;
-    use lopdf::{Document, Object};
+    use lopdf::{content::Content, Document};
 
     let doc = Document::load(path)?;
     let mut full_text = String::new();
@@ -91,17 +130,16 @@ pub fn extract_text_from_pdf(path: &PathBuf) -> Result<String, Box<dyn Error>> {
         };
 
         let mut streams = Vec::new();
-
         match contents {
             Object::Reference(r) => {
                 let stream = doc.get_object(*r)?;
-                streams.push(stream.clone());
+                streams.push(stream);
             }
             Object::Array(arr) => {
                 for obj in arr {
                     if let Object::Reference(r) = obj {
                         let stream = doc.get_object(*r)?;
-                        streams.push(stream.clone());
+                        streams.push(stream);
                     }
                 }
             }

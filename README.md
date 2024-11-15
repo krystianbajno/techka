@@ -48,6 +48,13 @@ git clone https://github.com/krystianbajno/techka-secret
 # Usage
 I wrote this OP tool mostly for myself so I am not even going to discuss how to use it, but feel free to explore and use:
 
+# Plugin development
+You are free to develop plugins for this tool as it is extremely modular - recon-ng and metasploit-like. In order to develop a plugin:
+
+1. Create directory in `plugins` directory.
+2. Implement all methods extended from `plugins/plugin_base.py` just like other plugins.
+3. It should work automagically out of the box.
+
 ```bash
 python3 techka.py --full-help # display help for every possible module
 ```

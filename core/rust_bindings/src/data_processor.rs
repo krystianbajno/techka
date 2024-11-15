@@ -1,4 +1,5 @@
 use std::{collections::HashSet, path::PathBuf};
+use regex::Regex;
 
 use pyo3::prelude::*;
 
@@ -24,10 +25,11 @@ impl DataProcessor {
         Ok(text_processing::extract_text_from_pdfs(&files))
     }
 
-    fn find_keywords(&self, input_dir: &str, keywords: Vec<String>) -> PyResult<Vec<String>> {
+    fn find_keywords(&self, input_dir: &str, keywords: Vec<String>) -> PyResult<Vec<(String, usize, String)>> {
         let files = text_processing::get_all_files(input_dir);
         let keywords_set: HashSet<String> = keywords.into_iter().collect();
-        Ok(text_processing::find_keywords_in_files(&files, &keywords_set))
+        let keyword_regex = Regex::new(&keywords_set.iter().map(|k| regex::escape(k)).collect::<Vec<_>>().join("|")).unwrap();
+        Ok(text_processing::search_detailed_patterns_in_files(&files, &keyword_regex, 64))
     }
 
     fn get_emails_from_file(&self, filepath: &str) -> PyResult<Vec<String>> {
@@ -41,9 +43,10 @@ impl DataProcessor {
         Ok(text_processing::extract_text_from_file(&file))
     }
 
-    fn find_keywords_in_file(&self, filepath: &str, keywords: Vec<String>) -> PyResult<Vec<String>> {
+    fn find_keywords_in_file(&self, filepath: &str, keywords: Vec<String>) -> PyResult<Vec<(String, usize, String)>> {
         let file = PathBuf::from(filepath);
         let keywords_set: HashSet<String> = keywords.into_iter().collect();
-        Ok(text_processing::find_keywords_in_files(&[file], &keywords_set))
+        let keyword_regex = Regex::new(&keywords_set.iter().map(|k| regex::escape(k)).collect::<Vec<_>>().join("|")).unwrap();
+        Ok(text_processing::search_detailed_patterns_in_files(&[file], &keyword_regex, 64))
     }
 }

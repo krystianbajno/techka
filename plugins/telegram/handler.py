@@ -3,6 +3,9 @@ from plugins.telegram.services.telegram_service import TelegramService
 
 class Handler(Plugin):
     def initialize(self):
+        pass
+    
+    def initialize_on_running(self):
         self.telegram_service = TelegramService(self.service_provider.get_auth_service())
         
     def register_as(self):
@@ -12,7 +15,6 @@ class Handler(Plugin):
         telegram_parser = subparsers.add_parser(self.registered_as, help="Telegram related commands")
         telegram_subparsers = telegram_parser.add_subparsers(dest="action", required=True)
         
-        # Collect Command
         telegram_collect_parser = telegram_subparsers.add_parser("collect", help="Collect data from Telegram")
         telegram_collect_parser.add_argument("--channels", action="store_true", help="Collect all channels")
         telegram_collect_parser.add_argument("--users", action="store_true", help="Collect all users or users from a specific channel if --channel is provided")
@@ -50,6 +52,7 @@ class Handler(Plugin):
         telegram_search_parser.add_argument("query", type=str, help="Search query for messages, users, channels, or attachments")
     
     def handle(self, args):
+        self.initialize_on_running()
         action_map = {
             "collect": self._collect,
             "process": self._process,

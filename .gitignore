@@ -1,6 +1,6 @@
 __pycache__
-data/*
 venv/
+data/output
 techka/rust_bindings/target/
 *.db
 *.session

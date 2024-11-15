@@ -1,5 +1,6 @@
 import os
 
+from core.cli.colors import GREEN, RED, RESET, YELLOW
 from plugins.file.processing import get_emails, get_keywords, get_pdfs
 from plugins.plugin_base import Plugin
 
@@ -37,7 +38,12 @@ class Handler(Plugin):
                 for pdf_text in get_pdfs(args.filepath):
                     print(pdf_text)
 
-            if args.keywords:
-                print(get_keywords(args.filepath, args.keywords))
+            keywords = get_keywords(args.filepath, args.keywords)
+            for _1, _2, _3 in keywords:
+                colored_match = _3
+                for keyword in args.keywords:
+                    colored_match = colored_match.replace(keyword, f"{RED}{keyword}{RESET}")
+                print(f"[{YELLOW}{_1}{RESET}: {GREEN}{_2}{RESET}] {colored_match}")
+                
         else:
             print(f"File {args.filepath} does not exist.")

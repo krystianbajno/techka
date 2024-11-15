@@ -4,6 +4,8 @@
 ![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkrystianbajno%2Ftechka.svg?type=shield&issueType=security)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkrystianbajno%2Ftechka.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkrystianbajno%2Ftechka?ref=badge_shield)
 
+T E C H K A draws from the Polish word "teczka", meaning "briefcase," which traditionally holds important documents. The name reflects the project's focus on organizing and uncovering valuable open-source intelligence (OSINT) to transform the unknown into the known.
+
 This is not intelligence gathering. This is [counter deception](https://media.defcon.org/DEF%20CON%2032/DEF%20CON%2032%20presentations/DEF%20CON%2032%20-%20Tom%20Cross%20Greg%20Conti%20-%20Deception%20%26%20Counter%20Deception%20-%20Defending%20Yourself%20in%20a%20World%20Full%20of%20Lies.pdf). 
 
 ```

@@ -55,7 +55,7 @@ python3 techka.py --full-help # display help for every possible module
 You are free to develop plugins for this tool as it is extremely modular - recon-ng and metasploit-like. In order to develop a plugin:
 
 1. Create directory in `plugins` directory.
-2. Implement all methods extended from `plugins/plugin_base.py` just like other plugins.
+2. Implement all methods extended from `plugins/plugin_base.py` in `handler.py` just like other plugins.
 3. It should work automagically out of the box.
 
 ## License

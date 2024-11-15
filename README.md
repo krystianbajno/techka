@@ -45,5 +45,12 @@ cd plugins
 git clone https://github.com/krystianbajno/techka-secret
 ```
 
+# Usage
+I wrote this OP tool mostly for myself so I am not even going to discuss how to use it, but feel free to explore and use:
+
+```bash
+python3 techka.py --full-help # display help for every possible module
+```
+
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkrystianbajno%2Ftechka.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkrystianbajno%2Ftechka?ref=badge_large)

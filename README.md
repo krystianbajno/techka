@@ -1,5 +1,5 @@
 # T E C H K A
-[![CodeFactor](https://www.codefactor.io/repository/github/krystianbajno/techka/badge)](https://www.codefactor.io/repository/github/krystianbajno/techka)
+[![CodeFactor](https://www.codefactor.io/repository/github/krystianbajno/teczunia/badge)](https://www.codefactor.io/repository/github/krystianbajno/teczunia)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/282b115765ec479f91259778c0eccdc7)](https://app.codacy.com/gh/krystianbajno/techka/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkrystianbajno%2Ftechka.svg?type=shield&issueType=security)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkrystianbajno%2Ftechka.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkrystianbajno%2Ftechka?ref=badge_shield)

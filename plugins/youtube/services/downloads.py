@@ -6,16 +6,12 @@ def download_video_with_audio(url: str, out_dir: str = ".", container_format: st
     opts = {
         "format": "bestvideo+bestaudio/best",
         "outtmpl": os.path.join(out_dir, "%(title)s", "%(title)s.%(ext)s"),
-        "postprocessors": [{
-            "key": "FFmpegVideoConvertor",
-            "preferedformat": container_format
-        }]
     }
 
     try:
         with yt_dlp.YoutubeDL(opts) as y:
             y.download([url])
-        print(f"[INFO] Downloaded video+audio as {container_format} with audio codec {audio_codec}")
+        print(f"[INFO] Downloaded video+audio.")
     except Exception as e:
         print(f"[ERROR] Video+audio download failed: {e}")
 

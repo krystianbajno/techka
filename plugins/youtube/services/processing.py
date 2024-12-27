@@ -22,6 +22,10 @@ def handle_single_video(
     do_description: bool = False,
     do_comments: bool = False
 ) -> None:
+    
+    if "/shorts/" in url:
+       url = url.replace('/shorts/', "/watch?v=")
+    
     vid_id = extract_video_id(url)
     if not vid_id:
         print("[ERROR] Could not extract video ID.")

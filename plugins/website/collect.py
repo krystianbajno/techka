@@ -125,7 +125,6 @@ def run_playwright_for_content(urls_file, scraped_dir, metadata, auth_header=Non
         json.dump(metadata, json_file, ensure_ascii=False, indent=4)
     print(f"Metadata saved to {METADATA_FILE}")
 
-
 def extract_and_download_files(scraped_dir, file_extensions):
     for domain in (d for d in os.listdir(scraped_dir) if os.path.isdir(os.path.join(scraped_dir, d))):
         for root, _, files in os.walk(os.path.join(scraped_dir, domain)):

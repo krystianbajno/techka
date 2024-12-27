@@ -42,7 +42,7 @@ maturin build --release
 pip install target/wheels/*.whl
 
 cd plugins
-git clone https://github.com/krystianbajno/techka-secret
+git clone https://github.com/krystianbajno/techka-secret # nothing interesting here hahah 😈
 ```
 
 # Usage

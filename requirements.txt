@@ -9,3 +9,4 @@ cryptg
 youtube-transcript-api
 yt-dlp
 PyGithub
+google-api-python-client

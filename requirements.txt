@@ -13,5 +13,5 @@ pdfplumber
 google-api-python-client
 textract
 python-docx
-antiword-python
-python-doc2txt
+pdfminer
+telethon

@@ -25,8 +25,8 @@ function extractCommentsDataToCSV() {
       const imgElement = item.querySelector('.comments-comment-meta__actor img[src*="media.licdn.com"], .comments-comment-meta__actor img[src*="dms"]');
       const profileImageUrl = imgElement ? imgElement.src : 'N/A';
       
-      const editedElement = item.querySelector('.comments-comment-meta__data:contains("(edited)")');
-      const isEdited = editedElement ? true : false;
+      // const editedElement = item.querySelector('.comments-comment-meta__data:contains("(edited)")');
+      // const isEdited = editedElement ? true : false;
       
       const isReply = item.classList.contains('comments-comment-entity--reply');
       
@@ -56,7 +56,7 @@ function extractCommentsDataToCSV() {
         timePosted: timePosted,
         connectionDegree: connectionDegree,
         profileImageUrl: profileImageUrl,
-        isEdited: isEdited,
+        // isEdited: isEdited,
         isReply: isReply,
         reactionCount: reactionCount,
         reactionTypes: reactionTypes,
@@ -114,4 +114,4 @@ function downloadCSV(data, filename = 'linkedin_comments.csv') {
 
 
 const getPostComments = () => downloadCSV( extractCommentsDataToCSV(), 'linkedin_comments.csv');
-// getPostComments()
+getPostComments()

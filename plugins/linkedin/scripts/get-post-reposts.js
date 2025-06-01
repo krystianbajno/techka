@@ -115,4 +115,4 @@ function downloadCSV(data, filename = 'linkedin_reposts.csv') {
 // ------------
 
 const getPostReposts = () => downloadCSV(extractRepostsDataToCSV(), 'linkedin_reposts.csv');
-// getPostReposts()
+getPostReposts()

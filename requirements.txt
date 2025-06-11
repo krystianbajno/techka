@@ -11,8 +11,7 @@ yt-dlp
 PyGithub
 pdfplumber
 google-api-python-client
-textract
+python-magic
 python-docx
-pdfminer
 telethon
 pandas
